@@ -28,7 +28,7 @@ func (fan *Fanout) RemoveChan(ch chan []byte) {
 	delete(fan.chans, ch)
 }
 
-func (fan *Fanout) Count() int {
+func (fan *Fanout) Len() int {
 	fan.mutex.RLock()
 	defer fan.mutex.RUnlock()
 	return len(fan.chans)
