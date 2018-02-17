@@ -40,6 +40,7 @@ type Node struct {
 }
 
 const writeTimeout = 10 * time.Second // Timeout for client writes
+const queueSize    = 20
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -83,7 +84,7 @@ func outReadLoop(ws *websocket.Conn) {
 }
 
 func outWriteLoop(ws *websocket.Conn, node *Node) {
-	ch := make(chan []byte)
+	ch := make(chan []byte, queueSize)
 	node.fan.AddChan(ch)
 	defer func() {
 		node.fan.RemoveChan(ch)
