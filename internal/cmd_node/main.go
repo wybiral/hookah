@@ -23,12 +23,11 @@ func Main(args []string) {
 		return
 	}
 	node := &Node{fan: fanout.NewFanout()}
-	r := http.NewServeMux()
-	r.HandleFunc("/in", node.In)
-	r.HandleFunc("/out", node.Out)
+	http.HandleFunc("/in", node.In)
+	http.HandleFunc("/out", node.Out)
 	addr := args[0]
 	log.Println("Serving at", addr)
-	err := http.ListenAndServe(addr, r)
+	err := http.ListenAndServe(addr, nil)
 	if err != nil {
 		log.Fatal(err)
 	}

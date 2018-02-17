@@ -28,7 +28,6 @@ func Main(args []string) {
 		log.Fatal(err)
 	}
 	defer ws.Close()
-	newline := []byte{'\n'}
 	out := bufio.NewWriter(os.Stdout)
 	for {
 		_, data, err := ws.ReadMessage()
@@ -36,7 +35,7 @@ func Main(args []string) {
 			log.Fatal(err)
 		}
 		out.Write(data)
-		out.Write(newline)
+		out.WriteByte('\n')
 		out.Flush()
 	}
 }
