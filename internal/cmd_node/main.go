@@ -2,7 +2,6 @@ package cmd_node
 
 import (
 	"fmt"
-	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/wybiral/hookah/pkg/fanout"
 	"log"
@@ -24,7 +23,7 @@ func Main(args []string) {
 		return
 	}
 	node := &Node{fan: fanout.NewFanout()}
-	r := mux.NewRouter().StrictSlash(true)
+	r := http.NewServeMux()
 	r.HandleFunc("/in", node.In)
 	r.HandleFunc("/out", node.Out)
 	addr := args[0]

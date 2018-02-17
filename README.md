@@ -3,7 +3,6 @@ WebSocket pipeline tool.
 
 ### Install dependencies
 ```
-go get github.com/gorilla/mux
 go get github.com/gorilla/websocket
 go get github.com/wybiral/hookah
 ```
