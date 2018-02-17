@@ -22,22 +22,21 @@ func Main(args []string) {
 		return
 	}
 	addr := args[0]
-	url := fmt.Sprintf("ws://%s/in", addr)
+	url := fmt.Sprintf("ws://%s/out", addr)
 	ws, _, err := websocket.DefaultDialer.Dial(url, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer ws.Close()
-	scanner := bufio.NewScanner(os.Stdin)
-	for scanner.Scan() {
-		err := ws.WriteMessage(websocket.BinaryMessage, scanner.Bytes())
+	newline := []byte{'\n'}
+	out := bufio.NewWriter(os.Stdout)
+	for {
+		_, data, err := ws.ReadMessage()
 		if err != nil {
 			log.Fatal(err)
-			return
 		}
-	}
-	err = scanner.Err()
-	if err != nil {
-		log.Fatal(err)
+		out.Write(data)
+		out.Write(newline)
+		out.Flush()
 	}
 }
