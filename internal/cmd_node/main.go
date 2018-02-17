@@ -41,6 +41,7 @@ type Node struct {
 
 const writeTimeout = 10 * time.Second // Timeout for client writes
 const queueSize    = 20
+const throttleRate = time.Second / 25
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -54,12 +55,15 @@ func (node *Node) In(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer ws.Close()
+	throttle := time.NewTicker(throttleRate)
+	defer throttle.Stop()
 	for {
 		_, data, err := ws.ReadMessage()
 		if err != nil {
 			return
 		}
 		node.fan.Send(data)
+		<-throttle.C
 	}
 }
 
