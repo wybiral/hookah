@@ -33,7 +33,6 @@ func Main(args []string) {
 		err := ws.WriteMessage(websocket.BinaryMessage, scanner.Bytes())
 		if err != nil {
 			log.Fatal(err)
-			return
 		}
 	}
 	err = scanner.Err()

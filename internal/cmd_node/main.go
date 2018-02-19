@@ -9,6 +9,20 @@ import (
 	"time"
 )
 
+// Application state
+type Node struct {
+	fan *fanout.Fanout
+}
+
+const writeTimeout = 10 * time.Second // Timeout for client writes
+const queueSize = 20                  // Queue size per client
+const throttleRate = time.Second / 25 // Maximum rate for incoming messages
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
+
 func usage() {
 	fmt.Println("NAME:")
 	fmt.Println("   hookah node - start new node\n")
@@ -33,19 +47,7 @@ func Main(args []string) {
 	}
 }
 
-type Node struct {
-	fan *fanout.Fanout
-}
-
-const writeTimeout = 10 * time.Second // Timeout for client writes
-const queueSize    = 20
-const throttleRate = time.Second / 25
-
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-}
-
+// Handler for /in connections
 func (node *Node) In(w http.ResponseWriter, r *http.Request) {
 	log.Println("/in")
 	ws, err := upgrader.Upgrade(w, r, nil)
@@ -65,6 +67,7 @@ func (node *Node) In(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Handler for /out connections
 func (node *Node) Out(w http.ResponseWriter, r *http.Request) {
 	log.Println("/out")
 	ws, err := upgrader.Upgrade(w, r, nil)
@@ -75,6 +78,8 @@ func (node *Node) Out(w http.ResponseWriter, r *http.Request) {
 	outWriteLoop(ws, node)
 }
 
+// Read from /out connections to handle
+// to process WebSocket control messages
 func outReadLoop(ws *websocket.Conn) {
 	defer ws.Close()
 	for {
@@ -85,6 +90,7 @@ func outReadLoop(ws *websocket.Conn) {
 	}
 }
 
+// Register with fanout instance and pump messages to WebSocket client
 func outWriteLoop(ws *websocket.Conn, node *Node) {
 	ch := make(chan []byte, queueSize)
 	node.fan.AddChan(ch)
