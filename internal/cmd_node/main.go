@@ -36,7 +36,7 @@ func Main(args []string) {
 		usage()
 		return
 	}
-	node := &Node{fan: fanout.NewFanout()}
+	node := &Node{fan: fanout.New()}
 	http.HandleFunc("/in", node.In)
 	http.HandleFunc("/out", node.Out)
 	addr := args[0]
@@ -93,9 +93,9 @@ func outReadLoop(ws *websocket.Conn) {
 // Register with fanout instance and pump messages to WebSocket client
 func outWriteLoop(ws *websocket.Conn, node *Node) {
 	ch := make(chan []byte, queueSize)
-	node.fan.AddChan(ch)
+	node.fan.Add(ch)
 	defer func() {
-		node.fan.RemoveChan(ch)
+		node.fan.Remove(ch)
 		ws.Close()
 	}()
 	for msg := range ch {

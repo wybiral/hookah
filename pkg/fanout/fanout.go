@@ -5,39 +5,38 @@ import (
 )
 
 type Fanout struct {
-	mutex *sync.RWMutex
 	chans map[chan []byte]struct{}
+	sync.RWMutex
 }
 
-func NewFanout() *Fanout {
+func New() *Fanout {
 	return &Fanout{
-		mutex: &sync.RWMutex{},
 		chans: make(map[chan []byte]struct{}),
 	}
 }
 
-func (fan *Fanout) AddChan(ch chan []byte) {
-	fan.mutex.Lock()
-	defer fan.mutex.Unlock()
-	fan.chans[ch] = struct{}{}
+func (f *Fanout) Add(ch chan []byte) {
+	f.Lock()
+	defer f.Unlock()
+	f.chans[ch] = struct{}{}
 }
 
-func (fan *Fanout) RemoveChan(ch chan []byte) {
-	fan.mutex.Lock()
-	defer fan.mutex.Unlock()
-	delete(fan.chans, ch)
+func (f *Fanout) Remove(ch chan []byte) {
+	f.Lock()
+	defer f.Unlock()
+	delete(f.chans, ch)
 }
 
-func (fan *Fanout) Len() int {
-	fan.mutex.RLock()
-	defer fan.mutex.RUnlock()
-	return len(fan.chans)
+func (f *Fanout) Len() int {
+	f.RLock()
+	defer f.RUnlock()
+	return len(f.chans)
 }
 
-func (fan *Fanout) Send(data []byte) {
-	fan.mutex.RLock()
-	defer fan.mutex.RUnlock()
-	for ch, _ := range fan.chans {
+func (f *Fanout) Send(data []byte) {
+	f.RLock()
+	defer f.RUnlock()
+	for ch, _ := range f.chans {
 		select {
 		case ch <- data:
 		default:
