@@ -27,3 +27,7 @@ Read from a remote node:
 ```
 ./hookah recv remote_host:port
 ```
+Pipe between two remote nodes and apply local program as map/filter:
+```
+./hookah recv remote_host1:port | local_program | ./hookah send remote_host2:port
+```
