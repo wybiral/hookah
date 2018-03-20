@@ -62,6 +62,7 @@ func (node *Node) In(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return
 		}
+		log.Println("Received", len(data), "bytes")
 		node.fan.Send(data)
 		<-throttle.C
 	}

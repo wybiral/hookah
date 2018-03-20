@@ -30,10 +30,12 @@ func Main(args []string) {
 	defer ws.Close()
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
-		err := ws.WriteMessage(websocket.BinaryMessage, scanner.Bytes())
+		data := scanner.Bytes()
+		err := ws.WriteMessage(websocket.BinaryMessage, data)
 		if err != nil {
 			log.Fatal(err)
 		}
+		log.Println("Sent", len(data), "bytes")
 	}
 	err = scanner.Err()
 	if err != nil {
