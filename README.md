@@ -3,7 +3,7 @@ hookah is a lightweight pipeline tool that makes it easy to work with WebSocket
 streams as though they were normal POSIX-style pipelines.
 
 The goal is to makes it easy to perform tasks like fanning-in multiple data
-sources to create a firehose API fanning-out a local program's output for
+sources to create a firehose API or fanning-out a local program's output for
 real-time distribution. All without having to integrate any WebSocket-specific
 code into your applications.
 
