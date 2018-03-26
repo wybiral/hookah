@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"github.com/gorilla/websocket"
 	"log"
+	"net/http"
 	"os"
+	"strings"
 )
 
 func usage() {
@@ -21,9 +23,12 @@ func Main(args []string) {
 		usage()
 		return
 	}
-	addr := args[0]
-	url := fmt.Sprintf("ws://%s/out", addr)
-	ws, _, err := websocket.DefaultDialer.Dial(url, nil)
+	url := args[0]
+	if !strings.HasPrefix(url, "ws://") {
+		url = "ws://" + url
+	}
+	header := http.Header{"Hookah-Method": {"recv"}}
+	ws, _, err := websocket.DefaultDialer.Dial(url, header)
 	if err != nil {
 		log.Fatal(err)
 	}

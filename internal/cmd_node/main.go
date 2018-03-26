@@ -37,8 +37,7 @@ func Main(args []string) {
 		return
 	}
 	node := &Node{fan: fanout.New()}
-	http.HandleFunc("/in", node.In)
-	http.HandleFunc("/out", node.Out)
+	http.HandleFunc("/", node.HandleRequest)
 	addr := args[0]
 	log.Println("Serving at", addr)
 	err := http.ListenAndServe(addr, nil)
@@ -47,9 +46,18 @@ func Main(args []string) {
 	}
 }
 
+func (node *Node) HandleRequest(w http.ResponseWriter, r *http.Request) {
+	method := r.Header.Get("Hookah-Method")
+	if method == "send" {
+		node.handleSend(w, r)
+	} else {
+		node.handleRecv(w, r)
+	}
+}
+
 // Handler for /in connections
-func (node *Node) In(w http.ResponseWriter, r *http.Request) {
-	log.Println("/in")
+func (node *Node) handleSend(w http.ResponseWriter, r *http.Request) {
+	log.Println("Connection: send")
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return
@@ -69,8 +77,8 @@ func (node *Node) In(w http.ResponseWriter, r *http.Request) {
 }
 
 // Handler for /out connections
-func (node *Node) Out(w http.ResponseWriter, r *http.Request) {
-	log.Println("/out")
+func (node *Node) handleRecv(w http.ResponseWriter, r *http.Request) {
+	log.Println("Connection: recv")
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return
