@@ -24,7 +24,7 @@ func Main(args []string) {
 		return
 	}
 	url := args[0]
-	if !strings.HasPrefix(url, "ws://") {
+	if !(strings.HasPrefix(url, "ws://") || strings.HasPrefix(url, "wss://")) {
 		url = "ws://" + url
 	}
 	header := http.Header{"Hookah-Method": {"recv"}}
