@@ -1,11 +1,9 @@
 # hookah
-hookah is a lightweight pipeline tool that makes it easy to work with WebSocket
-streams as though they were normal POSIX-style pipelines.
+hookah is a lightweight pipeline tool for orchestrating WebSocket streams.
 
-The goal is to makes it easy to perform tasks like fanning-in multiple data
-sources to create a firehose API or fanning-out a local program's output for
-real-time distribution. All without having to integrate any WebSocket-specific
-code into your applications.
+Operations like fanning-in multiple data sources, fanning-out to multiple
+consumers, and applying local map/filter operations between endpoints are all
+possible using hookah and standard POSIX pipes.
 
 ### Install dependencies
 ```
