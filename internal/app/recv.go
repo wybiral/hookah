@@ -1,16 +1,13 @@
-package recv
+package app
 
 import (
 	"bufio"
 	"fmt"
-	"github.com/gorilla/websocket"
 	"log"
-	"net/http"
 	"os"
-	"strings"
 )
 
-func usage() {
+func recvUsage() {
 	fmt.Println("NAME:")
 	fmt.Println("   hookah recv - pipe from node to local stdout\n")
 	fmt.Println("USAGE:")
@@ -18,17 +15,12 @@ func usage() {
 	fmt.Println("")
 }
 
-func Main(args []string) {
+func RecvMain(args []string) {
 	if len(args) != 1 {
-		usage()
+		recvUsage()
 		return
 	}
-	url := args[0]
-	if !(strings.HasPrefix(url, "ws://") || strings.HasPrefix(url, "wss://")) {
-		url = "ws://" + url
-	}
-	header := http.Header{"Hookah-Method": {"recv"}}
-	ws, _, err := websocket.DefaultDialer.Dial(url, header)
+	ws, err := websocketClient(args[0], "recv")
 	if err != nil {
 		log.Fatal(err)
 	}

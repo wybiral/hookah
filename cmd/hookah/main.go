@@ -2,13 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/wybiral/hookah/internal/app/node"
-	"github.com/wybiral/hookah/internal/app/recv"
-	"github.com/wybiral/hookah/internal/app/send"
+	"github.com/wybiral/hookah/internal/app"
 	"os"
 )
 
-const version = "0.3.0"
+const version = "0.3.1"
 
 func usage() {
 	fmt.Println("NAME:")
@@ -33,11 +31,11 @@ func main() {
 	}
 	switch args[0] {
 	case "node":
-		node.Main(args[1:])
+		app.NodeMain(args[1:])
 	case "recv":
-		recv.Main(args[1:])
+		app.RecvMain(args[1:])
 	case "send":
-		send.Main(args[1:])
+		app.SendMain(args[1:])
 	case "version":
 		fmt.Println(version)
 	default:

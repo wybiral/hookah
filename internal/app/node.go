@@ -1,4 +1,4 @@
-package node
+package app
 
 import (
 	"fmt"
@@ -23,7 +23,7 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-func usage() {
+func nodeUsage() {
 	fmt.Println("NAME:")
 	fmt.Println("   hookah node - start new node\n")
 	fmt.Println("USAGE:")
@@ -31,9 +31,9 @@ func usage() {
 	fmt.Println("")
 }
 
-func Main(args []string) {
+func NodeMain(args []string) {
 	if len(args) != 1 {
-		usage()
+		nodeUsage()
 		return
 	}
 	n := &node{fan: fanout.New()}

@@ -1,16 +1,14 @@
-package send
+package app
 
 import (
 	"bufio"
 	"fmt"
 	"github.com/gorilla/websocket"
 	"log"
-	"net/http"
 	"os"
-	"strings"
 )
 
-func usage() {
+func sendUsage() {
 	fmt.Println("NAME:")
 	fmt.Println("   hookah send - pipe local stdout to node\n")
 	fmt.Println("USAGE:")
@@ -18,17 +16,12 @@ func usage() {
 	fmt.Println("")
 }
 
-func Main(args []string) {
+func SendMain(args []string) {
 	if len(args) != 1 {
-		usage()
+		sendUsage()
 		return
 	}
-	url := args[0]
-	if !(strings.HasPrefix(url, "ws://") || strings.HasPrefix(url, "wss://")) {
-		url = "ws://" + url
-	}
-	header := http.Header{"Hookah-Method": {"send"}}
-	ws, _, err := websocket.DefaultDialer.Dial(url, header)
+	ws, err := websocketClient(args[0], "send")
 	if err != nil {
 		log.Fatal(err)
 	}
