@@ -21,6 +21,9 @@ const throttleRate = time.Second / 25 // Maximum rate for incoming messages
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
 }
 
 func nodeUsage() {
@@ -83,13 +86,9 @@ func (n *node) handleRecv(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	go n.recvReadLoop(ws)
-	n.recvWriteLoop(ws)
-}
-
-// Read from recv connections to process WebSocket control messages
-func (n *node) recvReadLoop(ws *websocket.Conn) {
+	go n.recvWriteLoop(ws)
 	defer ws.Close()
+	// Read from connection to process WebSocket control messages
 	for {
 		_, _, err := ws.NextReader()
 		if err != nil {
