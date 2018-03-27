@@ -107,8 +107,11 @@ func (n *node) recvWriteLoop(ws *websocket.Conn) {
 		ws.Close()
 	}()
 	for msg := range ch {
-		ws.SetWriteDeadline(time.Now().Add(writeTimeout))
-		err := ws.WriteMessage(websocket.TextMessage, msg)
+		err := ws.SetWriteDeadline(time.Now().Add(writeTimeout))
+		if err != nil {
+			return
+		}
+		err = ws.WriteMessage(websocket.TextMessage, msg)
 		if err != nil {
 			return
 		}
