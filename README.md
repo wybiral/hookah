@@ -8,7 +8,7 @@ possible using hookah and standard POSIX pipes.
 ### Install dependencies
 ```
 go get github.com/gorilla/websocket
-go get github.com/wybiral/hookah
+go get github.com/wybiral/hookah/cmd/hookah
 ```
 ### Build
 ```
