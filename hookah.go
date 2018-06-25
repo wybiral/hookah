@@ -8,11 +8,11 @@ import (
 )
 
 // Parse an input option string and return a new ReadCloser.
-func ParseInput(opts string) (io.ReadCloser, error) {
-	return input.Parse(opts)
+func NewInput(opts string) (io.ReadCloser, error) {
+	return input.New(opts)
 }
 
 // Parse an output option string and return a new WriteCloser.
-func ParseOutput(opts string) (io.WriteCloser, error) {
-	return output.Parse(opts)
+func NewOutput(opts string) (io.WriteCloser, error) {
+	return output.New(opts)
 }

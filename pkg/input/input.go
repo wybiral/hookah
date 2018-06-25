@@ -1,3 +1,4 @@
+// This package provides input stream sources.
 package input
 
 import (
@@ -11,7 +12,7 @@ import (
 const bufferSize = 4 * 1024
 
 // Parse an option string and return a new ReadCloser.
-func Parse(opts string) (io.ReadCloser, error) {
+func New(opts string) (io.ReadCloser, error) {
 	parts := strings.SplitN(opts, "://", 2)
 	proto := parts[0]
 	switch proto {

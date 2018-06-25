@@ -1,3 +1,4 @@
+// This package provides output stream destinations.
 package output
 
 import (
@@ -11,7 +12,7 @@ import (
 const queueSize = 10
 
 // Parse an option string and return a new WriteCloser.
-func Parse(opts string) (io.WriteCloser, error) {
+func New(opts string) (io.WriteCloser, error) {
 	parts := strings.SplitN(opts, "://", 2)
 	proto := parts[0]
 	switch proto {
