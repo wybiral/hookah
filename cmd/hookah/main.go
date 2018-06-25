@@ -5,6 +5,8 @@ import (
 	"flag"
 	"io"
 	"log"
+	"os"
+	"os/signal"
 	"github.com/wybiral/hookah/pkg/input"
 	"github.com/wybiral/hookah/pkg/output"
 )
@@ -23,5 +25,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, os.Interrupt)
+	go func(){
+		<-ch
+		in.Close()
+		out.Close()
+		os.Exit(1)
+	}()
 	io.Copy(out, in)
 }
