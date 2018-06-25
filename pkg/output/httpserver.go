@@ -1,21 +1,21 @@
 package output
 
 import (
+	"github.com/wybiral/hookah/pkg/fanout"
 	"io"
 	"net/http"
-	"github.com/wybiral/hookah/pkg/fanout"
 )
 
 type httpServerApp struct {
 	server *http.Server
-	fan *fanout.Fanout
+	fan    *fanout.Fanout
 }
 
 // Create an HTTP server and return as WriteCloser
 func httpServer(addr string) (io.WriteCloser, error) {
 	app := &httpServerApp{}
 	app.server = &http.Server{
-		Addr: addr,
+		Addr:    addr,
 		Handler: http.HandlerFunc(app.handle),
 	}
 	app.fan = fanout.New()

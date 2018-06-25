@@ -1,10 +1,10 @@
 package output
 
 import (
-	"io"
-	"strings"
 	"errors"
+	"io"
 	"os"
+	"strings"
 )
 
 // Number of buffered messages for each incoming server connection.

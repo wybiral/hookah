@@ -20,7 +20,7 @@ type httpServerApp struct {
 func httpServer(addr string) (io.ReadCloser, error) {
 	app := &httpServerApp{}
 	app.server = &http.Server{
-		Addr: addr,
+		Addr:    addr,
 		Handler: http.HandlerFunc(app.handle),
 	}
 	app.ch = make(chan []byte)

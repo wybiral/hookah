@@ -1,10 +1,10 @@
 package input
 
 import (
-	"io"
-	"strings"
 	"errors"
+	"io"
 	"os"
+	"strings"
 )
 
 // Buffer size used for incoming messages to servers

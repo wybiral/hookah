@@ -8,7 +8,7 @@ import (
 // Create an HTTP client and return as WriteCloser
 func httpClient(addr string) (io.WriteCloser, error) {
 	pr, pw := io.Pipe()
-	req, err := http.NewRequest("PUT", "http://" + addr, pr)
+	req, err := http.NewRequest("PUT", "http://"+addr, pr)
 	if err != nil {
 		return nil, err
 	}

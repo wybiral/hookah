@@ -7,7 +7,7 @@ import (
 
 // Create an HTTP client and return as ReadCloser
 func httpClient(addr string) (io.ReadCloser, error) {
-	req, err := http.NewRequest("GET", "http://" + addr, nil)
+	req, err := http.NewRequest("GET", "http://"+addr, nil)
 	if err != nil {
 		return nil, err
 	}
