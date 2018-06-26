@@ -22,7 +22,12 @@ func New(opts string) (io.ReadCloser, error) {
 		if len(parts) < 2 {
 			return nil, errors.New("http client: no address supplied")
 		}
-		return httpClient(parts[1])
+		return httpClient("http://" + parts[1])
+	case "https":
+		if len(parts) < 2 {
+			return nil, errors.New("https client: no address supplied")
+		}
+		return httpClient("https://" + parts[1])
 	case "http-server":
 		if len(parts) < 2 {
 			return nil, errors.New("http server: no address supplied")

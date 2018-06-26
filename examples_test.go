@@ -1,8 +1,9 @@
 package hookah_test
 
 import (
-	"github.com/wybiral/hookah"
 	"io"
+
+	"github.com/wybiral/hookah"
 )
 
 var r io.Reader

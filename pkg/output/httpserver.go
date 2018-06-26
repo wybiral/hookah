@@ -1,9 +1,10 @@
 package output
 
 import (
-	"github.com/wybiral/hookah/pkg/fanout"
 	"io"
 	"net/http"
+
+	"github.com/wybiral/hookah/pkg/fanout"
 )
 
 type httpServerApp struct {

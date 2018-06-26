@@ -3,11 +3,12 @@ package main
 
 import (
 	"flag"
-	"github.com/wybiral/hookah"
 	"io"
 	"log"
 	"os"
 	"os/signal"
+
+	"github.com/wybiral/hookah"
 )
 
 func main() {

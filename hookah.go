@@ -2,9 +2,10 @@
 package hookah
 
 import (
+	"io"
+
 	"github.com/wybiral/hookah/pkg/input"
 	"github.com/wybiral/hookah/pkg/output"
-	"io"
 )
 
 // Parse an input option string and return a new ReadCloser.

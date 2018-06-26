@@ -1,9 +1,10 @@
 package output
 
 import (
-	"github.com/wybiral/hookah/pkg/fanout"
 	"io"
 	"net"
+
+	"github.com/wybiral/hookah/pkg/fanout"
 )
 
 type listenServerApp struct {
