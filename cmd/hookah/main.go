@@ -22,11 +22,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer in.Close()
 	// Setup out stream
 	out, err := hookah.NewOutput(outOpts)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer out.Close()
 	// Listen for interrupt to close gracefully
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, os.Interrupt)
