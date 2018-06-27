@@ -16,6 +16,7 @@ type wsconn struct {
 	reader io.Reader
 }
 
+// Create a WebSocket client and return as ReadCloser
 func wsClient(addr string) (io.ReadCloser, error) {
 	conn, _, err := websocket.DefaultDialer.Dial(addr, nil)
 	if err != nil {

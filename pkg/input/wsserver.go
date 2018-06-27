@@ -18,6 +18,7 @@ type wsServerApp struct {
 	top []byte
 }
 
+// WebSocket upgrader
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
@@ -26,7 +27,7 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-// Create an WebSocket server and return as ReadCloser
+// Create a WebSocket server and return as ReadCloser
 func wsServer(addr string) (io.ReadCloser, error) {
 	app := &wsServerApp{}
 	app.server = &http.Server{
@@ -43,6 +44,7 @@ func wsServer(addr string) (io.ReadCloser, error) {
 func (app *wsServerApp) Read(b []byte) (int, error) {
 	app.mu.Lock()
 	defer app.mu.Unlock()
+	// top is empty, pull from ch
 	if len(app.top) == 0 {
 		app.top = <-app.ch
 		if len(app.top) == 0 {

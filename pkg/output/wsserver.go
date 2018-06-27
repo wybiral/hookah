@@ -13,6 +13,7 @@ type wsServerApp struct {
 	fan    *fanout.Fanout
 }
 
+// WebSocket upgrader
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
@@ -21,6 +22,7 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+// Create a WebSocket server and return as ReadCloser
 func wsServer(addr string) (io.WriteCloser, error) {
 	app := &wsServerApp{}
 	app.server = &http.Server{

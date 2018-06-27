@@ -15,6 +15,7 @@ type wsconn struct {
 	mu *sync.Mutex
 }
 
+// Create a WebSocket client and return as WriteCloser
 func wsClient(addr string) (io.WriteCloser, error) {
 	conn, _, err := websocket.DefaultDialer.Dial(addr, nil)
 	if err != nil {
