@@ -18,6 +18,11 @@ func New(opts string) (io.ReadCloser, error) {
 	switch proto {
 	case "stdin":
 		return os.Stdin, nil
+	case "file":
+		if len(parts) < 2 {
+			return nil, errors.New("file: no path supplied")
+		}
+		return file(parts[1])
 	case "http":
 		if len(parts) < 2 {
 			return nil, errors.New("http client: no address supplied")
