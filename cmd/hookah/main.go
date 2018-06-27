@@ -1,4 +1,4 @@
-// This package is the main CLI hookah tool.
+// Package main implements the main hookah CLI tool.
 package main
 
 import (

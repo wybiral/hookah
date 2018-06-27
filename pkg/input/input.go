@@ -1,4 +1,4 @@
-// This package provides input stream sources.
+// Package input provides input stream sources.
 package input
 
 import (
@@ -11,7 +11,7 @@ import (
 // Buffer size used for incoming messages to servers
 const bufferSize = 4 * 1024
 
-// Parse an option string and return a new ReadCloser.
+// New parses an option string and returns a new ReadCloser.
 func New(opts string) (io.ReadCloser, error) {
 	parts := strings.SplitN(opts, "://", 2)
 	proto := parts[0]
