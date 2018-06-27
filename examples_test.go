@@ -47,6 +47,16 @@ func ExampleNewInput_unixServer() {
 	r, err = hookah.NewInput("unix-server://path/to/sock")
 }
 
+// Create WebSocket client input.
+func ExampleNewInput_wsClient() {
+	r, err = hookah.NewInput("ws://localhost:8080")
+}
+
+// Create WebSocket server input.
+func ExampleNewInput_wsServer() {
+	r, err = hookah.NewInput("ws-server://localhost:8080")
+}
+
 // NewOutput examples
 
 // Create stdout output.
@@ -87,4 +97,14 @@ func ExampleNewOutput_unixClient() {
 // Create Unix server output.
 func ExampleNewOutput_unixServer() {
 	w, err = hookah.NewOutput("unix-server://path/to/sock")
+}
+
+// Create WebSocket client output.
+func ExampleNewOutput_wsClient() {
+	w, err = hookah.NewOutput("ws://localhost:8080")
+}
+
+// Create WebSocket server output.
+func ExampleNewOutput_wsServer() {
+	w, err = hookah.NewOutput("ws-server://localhost:8080")
 }
