@@ -17,6 +17,16 @@ func ExampleNewInput_stdin() {
 	r, err = hookah.NewInput("stdin")
 }
 
+// Create file input from absolute path.
+func ExampleNewInput_fileAbsolute() {
+	r, err = hookah.NewInput("file:///relative/path")
+}
+
+// Create file input from relative path.
+func ExampleNewInput_fileRelative() {
+	r, err = hookah.NewInput("file://relative/path")
+}
+
 // Create HTTP client input.
 func ExampleNewInput_httpClient() {
 	r, err = hookah.NewInput("http://localhost:8080")
@@ -67,6 +77,16 @@ func ExampleNewOutput_stdout() {
 // Create stderr output.
 func ExampleNewOutput_stderr() {
 	w, err = hookah.NewOutput("stderr")
+}
+
+// Create file output from absolute path (opens in append mode).
+func ExampleNewOutput_fileAbsolute() {
+	w, err = hookah.NewOutput("file:///relative/path")
+}
+
+// Create file output from relative path (opens in append mode).
+func ExampleNewOutput_fileRelative() {
+	w, err = hookah.NewOutput("file://relative/path")
 }
 
 // Create HTTP client output.
