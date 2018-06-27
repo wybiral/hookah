@@ -58,6 +58,11 @@ func New(opts string) (io.ReadCloser, error) {
 			return nil, errors.New("ws client: no address supplied")
 		}
 		return wsClient("ws://" + parts[1])
+	case "wss":
+		if len(parts) < 2 {
+			return nil, errors.New("wss client: no address supplied")
+		}
+		return wsClient("wss://" + parts[1])
 	case "ws-server":
 		if len(parts) < 2 {
 			return nil, errors.New("ws server: no address supplied")
