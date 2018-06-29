@@ -48,7 +48,7 @@ func New(opts string) (io.ReadCloser, error) {
 			return nil, errors.New("https client: no address supplied")
 		}
 		return httpClient("https://" + arg)
-	case "http-server":
+	case "http-listen", "http-server":
 		if arg == "" {
 			return nil, errors.New("http server: no address supplied")
 		}
@@ -58,7 +58,7 @@ func New(opts string) (io.ReadCloser, error) {
 			return nil, errors.New("tcp client: no address supplied")
 		}
 		return tcpClient(arg)
-	case "tcp-server":
+	case "tcp-listen", "tcp-server":
 		if arg == "" {
 			return nil, errors.New("tcp server: no address supplied")
 		}
@@ -68,7 +68,7 @@ func New(opts string) (io.ReadCloser, error) {
 			return nil, errors.New("unix client: no address supplied")
 		}
 		return unixClient(arg)
-	case "unix-server":
+	case "unix-listen", "unix-server":
 		if arg == "" {
 			return nil, errors.New("unix server: no address supplied")
 		}
@@ -83,7 +83,7 @@ func New(opts string) (io.ReadCloser, error) {
 			return nil, errors.New("wss client: no address supplied")
 		}
 		return wsClient("wss://" + arg)
-	case "ws-server":
+	case "ws-listen", "ws-server":
 		if arg == "" {
 			return nil, errors.New("ws server: no address supplied")
 		}
