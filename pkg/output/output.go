@@ -65,6 +65,11 @@ func New(opts string) (io.WriteCloser, error) {
 			return nil, errors.New("tcp-listen: no address supplied")
 		}
 		return tcpListen(arg)
+	case "udp":
+		if arg == "" {
+			return nil, errors.New("udp: no address supplied")
+		}
+		return udpClient(arg)
 	case "unix":
 		if arg == "" {
 			return nil, errors.New("unix: no address supplied")
