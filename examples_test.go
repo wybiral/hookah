@@ -19,7 +19,7 @@ func ExampleNewInput_stdin() {
 
 // Create file input from absolute path.
 func ExampleNewInput_fileAbsolute() {
-	r, err = hookah.NewInput("file:///relative/path")
+	r, err = hookah.NewInput("file:///absolute/path")
 }
 
 // Create file input from relative path.
@@ -93,7 +93,7 @@ func ExampleNewOutput_stderr() {
 
 // Create file output from absolute path (opens in append mode).
 func ExampleNewOutput_fileAbsolute() {
-	w, err = hookah.NewOutput("file:///relative/path")
+	w, err = hookah.NewOutput("file:///absolute/path")
 }
 
 // Create file output from relative path (opens in append mode).
