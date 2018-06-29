@@ -6,7 +6,7 @@ import (
 	"sync"
 )
 
-type httpServerApp struct {
+type httpListenApp struct {
 	server *http.Server
 	// Channel of messages
 	ch chan []byte
@@ -16,9 +16,9 @@ type httpServerApp struct {
 	top []byte
 }
 
-// Create an HTTP server and return as ReadCloser
-func httpServer(addr string) (io.ReadCloser, error) {
-	app := &httpServerApp{}
+// Create an HTTP listener and return as ReadCloser
+func httpListen(addr string) (io.ReadCloser, error) {
+	app := &httpListenApp{}
 	app.server = &http.Server{
 		Addr:    addr,
 		Handler: http.HandlerFunc(app.handle),
@@ -30,7 +30,7 @@ func httpServer(addr string) (io.ReadCloser, error) {
 	return app, nil
 }
 
-func (app *httpServerApp) Read(b []byte) (int, error) {
+func (app *httpListenApp) Read(b []byte) (int, error) {
 	app.mu.Lock()
 	defer app.mu.Unlock()
 	if len(app.top) == 0 {
@@ -45,12 +45,12 @@ func (app *httpServerApp) Read(b []byte) (int, error) {
 	return n, nil
 }
 
-func (app *httpServerApp) Close() error {
+func (app *httpListenApp) Close() error {
 	close(app.ch)
 	return app.server.Close()
 }
 
-func (app *httpServerApp) handle(w http.ResponseWriter, r *http.Request) {
+func (app *httpListenApp) handle(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	buffer := make([]byte, bufferSize)
 	for {

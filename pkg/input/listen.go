@@ -6,7 +6,7 @@ import (
 	"sync"
 )
 
-type listenServerApp struct {
+type listenApp struct {
 	ln net.Listener
 	// Channel of messages
 	ch chan []byte
@@ -16,9 +16,9 @@ type listenServerApp struct {
 	top []byte
 }
 
-// Create a listen server and return as ReadCloser
-func listenServer(network, addr string) (io.ReadCloser, error) {
-	app := &listenServerApp{}
+// Create a listener and return as ReadCloser
+func listen(network, addr string) (io.ReadCloser, error) {
+	app := &listenApp{}
 	ln, err := net.Listen(network, addr)
 	if err != nil {
 		return nil, err
@@ -31,7 +31,7 @@ func listenServer(network, addr string) (io.ReadCloser, error) {
 	return app, nil
 }
 
-func (app *listenServerApp) Read(b []byte) (int, error) {
+func (app *listenApp) Read(b []byte) (int, error) {
 	app.mu.Lock()
 	defer app.mu.Unlock()
 	if len(app.top) == 0 {
@@ -46,12 +46,12 @@ func (app *listenServerApp) Read(b []byte) (int, error) {
 	return n, nil
 }
 
-func (app *listenServerApp) Close() error {
+func (app *listenApp) Close() error {
 	close(app.ch)
 	return app.ln.Close()
 }
 
-func (app *listenServerApp) serve() {
+func (app *listenApp) serve() {
 	defer app.ln.Close()
 	for {
 		conn, err := app.ln.Accept()
@@ -62,7 +62,7 @@ func (app *listenServerApp) serve() {
 	}
 }
 
-func (app *listenServerApp) handle(conn net.Conn) {
+func (app *listenApp) handle(conn net.Conn) {
 	defer conn.Close()
 	buffer := make([]byte, bufferSize)
 	for {

@@ -8,7 +8,7 @@ import (
 	"github.com/wybiral/hookah/pkg/fanout"
 )
 
-type wsServerApp struct {
+type wsListenApp struct {
 	server *http.Server
 	fan    *fanout.Fanout
 }
@@ -22,9 +22,9 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-// Create a WebSocket server and return as ReadCloser
-func wsServer(addr string) (io.WriteCloser, error) {
-	app := &wsServerApp{}
+// Create a WebSocket listen and return as ReadCloser
+func wsListen(addr string) (io.WriteCloser, error) {
+	app := &wsListenApp{}
 	app.server = &http.Server{
 		Addr:    addr,
 		Handler: http.HandlerFunc(app.handle),
@@ -34,16 +34,16 @@ func wsServer(addr string) (io.WriteCloser, error) {
 	return app, nil
 }
 
-func (app *wsServerApp) Write(b []byte) (int, error) {
+func (app *wsListenApp) Write(b []byte) (int, error) {
 	app.fan.Send(b)
 	return len(b), nil
 }
 
-func (app *wsServerApp) Close() error {
+func (app *wsListenApp) Close() error {
 	return app.server.Close()
 }
 
-func (app *wsServerApp) handle(w http.ResponseWriter, r *http.Request) {
+func (app *wsListenApp) handle(w http.ResponseWriter, r *http.Request) {
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return
@@ -60,7 +60,7 @@ func (app *wsServerApp) handle(w http.ResponseWriter, r *http.Request) {
 }
 
 // Register with fanout instance and pump messages to WebSocket client
-func (app *wsServerApp) writeLoop(ws *websocket.Conn) {
+func (app *wsListenApp) writeLoop(ws *websocket.Conn) {
 	ch := make(chan []byte, queueSize)
 	app.fan.Add(ch)
 	defer func() {

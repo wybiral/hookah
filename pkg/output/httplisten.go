@@ -7,14 +7,14 @@ import (
 	"github.com/wybiral/hookah/pkg/fanout"
 )
 
-type httpServerApp struct {
+type httpListenApp struct {
 	server *http.Server
 	fan    *fanout.Fanout
 }
 
-// Create an HTTP server and return as WriteCloser
-func httpServer(addr string) (io.WriteCloser, error) {
-	app := &httpServerApp{}
+// Create an HTTP listener and return as WriteCloser
+func httpListen(addr string) (io.WriteCloser, error) {
+	app := &httpListenApp{}
 	app.server = &http.Server{
 		Addr:    addr,
 		Handler: http.HandlerFunc(app.handle),
@@ -24,16 +24,16 @@ func httpServer(addr string) (io.WriteCloser, error) {
 	return app, nil
 }
 
-func (app *httpServerApp) Write(b []byte) (int, error) {
+func (app *httpListenApp) Write(b []byte) (int, error) {
 	app.fan.Send(b)
 	return len(b), nil
 }
 
-func (app *httpServerApp) Close() error {
+func (app *httpListenApp) Close() error {
 	return app.server.Close()
 }
 
-func (app *httpServerApp) handle(w http.ResponseWriter, r *http.Request) {
+func (app *httpListenApp) handle(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	flusher, ok := w.(http.Flusher)
 	if !ok {
