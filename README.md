@@ -22,24 +22,24 @@ Any data that's fed into the input will be piped to the output.
 
 ## Examples
 
-Pipe from stdin to a new TCP server on port 8080:
+Pipe from stdin to a new TCP listener on port 8080:
 ```
-hookah -o tcp-server://localhost:8080
+hookah -o tcp-listen://localhost:8080
 ```
 
-Pipe from an existing TCP server on port 8080 to a new HTTP server on port 8081:
+Pipe from an existing TCP listener on port 8080 to a new HTTP listener on port 8081:
 ```
-hookah -i tcp://localhost:8080 -o http-server://localhost:8081
+hookah -i tcp://localhost:8080 -o http-listen://localhost:8081
 ```
 
 Pipe from a new Unix domain socket listener to stdout:
 ```
-hookah -i unix-server://path/to/sock
+hookah -i unix-listen://path/to/sock
 ```
 
-Pipe from a new HTTP server on port 8080 to an existing Unix domain socket:
+Pipe from a new HTTP listener on port 8080 to an existing Unix domain socket:
 ```
-hookah -i http-server://localhost:8080 -o unix://path/to/sock
+hookah -i http-listen://localhost:8080 -o unix://path/to/sock
 ```
 
 # Usage instructions (Go package)

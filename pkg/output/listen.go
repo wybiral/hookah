@@ -7,14 +7,14 @@ import (
 	"github.com/wybiral/hookah/pkg/fanout"
 )
 
-type listenServerApp struct {
+type listenApp struct {
 	ln  net.Listener
 	fan *fanout.Fanout
 }
 
 // Create a listen server and return as ReadCloser
-func listenServer(network, addr string) (io.WriteCloser, error) {
-	app := &listenServerApp{}
+func listen(network, addr string) (io.WriteCloser, error) {
+	app := &listenApp{}
 	ln, err := net.Listen(network, addr)
 	if err != nil {
 		return nil, err
@@ -25,16 +25,16 @@ func listenServer(network, addr string) (io.WriteCloser, error) {
 	return app, nil
 }
 
-func (app *listenServerApp) Write(b []byte) (int, error) {
+func (app *listenApp) Write(b []byte) (int, error) {
 	app.fan.Send(b)
 	return len(b), nil
 }
 
-func (app *listenServerApp) Close() error {
+func (app *listenApp) Close() error {
 	return app.ln.Close()
 }
 
-func (app *listenServerApp) serve() {
+func (app *listenApp) serve() {
 	defer app.ln.Close()
 	for {
 		conn, err := app.ln.Accept()
@@ -45,7 +45,7 @@ func (app *listenServerApp) serve() {
 	}
 }
 
-func (app *listenServerApp) handle(conn net.Conn) {
+func (app *listenApp) handle(conn net.Conn) {
 	defer conn.Close()
 	ch := make(chan []byte, queueSize)
 	app.fan.Add(ch)

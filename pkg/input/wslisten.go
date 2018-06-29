@@ -8,7 +8,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type wsServerApp struct {
+type wsListenApp struct {
 	server *http.Server
 	// Channel of messages
 	ch chan []byte
@@ -27,9 +27,9 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-// Create a WebSocket server and return as ReadCloser
-func wsServer(addr string) (io.ReadCloser, error) {
-	app := &wsServerApp{}
+// Create a WebSocket listener and return as ReadCloser
+func wsListen(addr string) (io.ReadCloser, error) {
+	app := &wsListenApp{}
 	app.server = &http.Server{
 		Addr:    addr,
 		Handler: http.HandlerFunc(app.handle),
@@ -41,7 +41,7 @@ func wsServer(addr string) (io.ReadCloser, error) {
 	return app, nil
 }
 
-func (app *wsServerApp) Read(b []byte) (int, error) {
+func (app *wsListenApp) Read(b []byte) (int, error) {
 	app.mu.Lock()
 	defer app.mu.Unlock()
 	// top is empty, pull from ch
@@ -57,12 +57,12 @@ func (app *wsServerApp) Read(b []byte) (int, error) {
 	return n, nil
 }
 
-func (app *wsServerApp) Close() error {
+func (app *wsListenApp) Close() error {
 	close(app.ch)
 	return app.server.Close()
 }
 
-func (app *wsServerApp) handle(w http.ResponseWriter, r *http.Request) {
+func (app *wsListenApp) handle(w http.ResponseWriter, r *http.Request) {
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return
