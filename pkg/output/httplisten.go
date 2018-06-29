@@ -12,8 +12,8 @@ type httpListenApp struct {
 	fan    *fanout.Fanout
 }
 
-// Create an HTTP listener and return as WriteCloser
-func httpListen(addr string) (io.WriteCloser, error) {
+// HTTPListen creates an HTTP listener and return as WriteCloser
+func HTTPListen(addr string) (io.WriteCloser, error) {
 	app := &httpListenApp{}
 	app.server = &http.Server{
 		Addr:    addr,

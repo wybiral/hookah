@@ -4,7 +4,7 @@ import (
 	"io"
 )
 
-// Create a TCP listener and return as ReadCloser
-func tcpListen(addr string) (io.ReadCloser, error) {
+// TCPListen creates a TCP listener and return as ReadCloser
+func TCPListen(addr string) (io.ReadCloser, error) {
 	return listen("tcp", addr)
 }

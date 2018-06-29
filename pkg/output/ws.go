@@ -15,8 +15,17 @@ type wsconn struct {
 	mu *sync.Mutex
 }
 
-// Create a WebSocket client and return as WriteCloser
-func wsClient(addr string) (io.WriteCloser, error) {
+// WS creates a WebSocket client and return as WriteCloser
+func WS(addr string) (io.WriteCloser, error) {
+	return wsrequest("ws://" + addr)
+}
+
+// WSS creates a secure WebSocket client and return as WriteCloser
+func WSS(addr string) (io.WriteCloser, error) {
+	return wsrequest("wss://" + addr)
+}
+
+func wsrequest(addr string) (io.WriteCloser, error) {
 	conn, _, err := websocket.DefaultDialer.Dial(addr, nil)
 	if err != nil {
 		return nil, err

@@ -18,14 +18,16 @@ func main() {
 	var outOpts string
 	flag.StringVar(&outOpts, "o", "stdout", "Stream output")
 	flag.Parse()
+	// Create hookah API instance
+	h := hookah.New()
 	// Setup in stream
-	in, err := hookah.NewInput(inOpts)
+	in, err := h.NewInput(inOpts)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer in.Close()
 	// Setup out stream
-	out, err := hookah.NewOutput(outOpts)
+	out, err := h.NewOutput(outOpts)
 	if err != nil {
 		log.Fatal(err)
 	}

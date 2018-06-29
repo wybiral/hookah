@@ -16,8 +16,17 @@ type wsconn struct {
 	reader io.Reader
 }
 
-// Create a WebSocket client and return as ReadCloser
-func wsClient(addr string) (io.ReadCloser, error) {
+// WS Creates a WebSocket client and returns a ReadCloser
+func WS(addr string) (io.ReadCloser, error) {
+	return wsrequest("ws://" + addr)
+}
+
+// WSS Creates a secure WebSocket client and returns a ReadCloser
+func WSS(addr string) (io.ReadCloser, error) {
+	return wsrequest("wss://" + addr)
+}
+
+func wsrequest(addr string) (io.ReadCloser, error) {
 	conn, _, err := websocket.DefaultDialer.Dial(addr, nil)
 	if err != nil {
 		return nil, err

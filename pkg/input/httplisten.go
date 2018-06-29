@@ -16,8 +16,8 @@ type httpListenApp struct {
 	top []byte
 }
 
-// Create an HTTP listener and return as ReadCloser
-func httpListen(addr string) (io.ReadCloser, error) {
+// HTTPListen creates an HTTP listener and return as ReadCloser
+func HTTPListen(addr string) (io.ReadCloser, error) {
 	app := &httpListenApp{}
 	app.server = &http.Server{
 		Addr:    addr,
