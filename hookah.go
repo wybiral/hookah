@@ -17,3 +17,13 @@ func NewInput(opts string) (io.ReadCloser, error) {
 func NewOutput(opts string) (io.WriteCloser, error) {
 	return output.New(opts)
 }
+
+// RegisterInput registers a new input protocol.
+func RegisterInput(proto string, h input.Handler) {
+	input.Register(proto, h)
+}
+
+// RegisterOutput registers a new output protocol.
+func RegisterOutput(proto string, h output.Handler) {
+	output.Register(proto, h)
+}
