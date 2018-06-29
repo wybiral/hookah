@@ -6,7 +6,14 @@ import (
 	"io"
 	"os"
 	"strings"
+	"sync"
 )
+
+// User defined protocols
+var protocols sync.Map
+
+// Handler is the function type for user defined input protocols.
+type Handler func(arg string) (io.WriteCloser, error)
 
 // Number of buffered messages for each incoming server connection.
 const queueSize = 10
@@ -15,67 +22,80 @@ const queueSize = 10
 func New(opts string) (io.WriteCloser, error) {
 	parts := strings.SplitN(opts, "://", 2)
 	proto := parts[0]
+	arg := ""
+	if len(parts) > 1 {
+		arg = parts[1]
+	}
+	fn, ok := protocols.Load(proto)
+	if ok {
+		return fn.(Handler)(arg)
+	}
 	switch proto {
 	case "stdout":
 		return os.Stdout, nil
 	case "stderr":
 		return os.Stderr, nil
 	case "file":
-		if len(parts) < 2 {
+		if arg == "" {
 			return nil, errors.New("file: no path supplied")
 		}
-		return file(parts[1])
+		return file(arg)
 	case "http":
-		if len(parts) < 2 {
+		if arg == "" {
 			return nil, errors.New("http client: no address supplied")
 		}
-		return httpClient("http://" + parts[1])
+		return httpClient("http://" + arg)
 	case "https":
-		if len(parts) < 2 {
+		if arg == "" {
 			return nil, errors.New("https client: no address supplied")
 		}
-		return httpClient("https://" + parts[1])
+		return httpClient("https://" + arg)
 	case "http-server":
-		if len(parts) < 2 {
+		if arg == "" {
 			return nil, errors.New("http server: no address supplied")
 		}
-		return httpServer(parts[1])
+		return httpServer(arg)
 	case "tcp":
-		if len(parts) < 2 {
+		if arg == "" {
 			return nil, errors.New("tcp client: no address supplied")
 		}
-		return tcpClient(parts[1])
+		return tcpClient(arg)
 	case "tcp-server":
-		if len(parts) < 2 {
+		if arg == "" {
 			return nil, errors.New("tcp server: no address supplied")
 		}
-		return tcpServer(parts[1])
+		return tcpServer(arg)
 	case "unix":
-		if len(parts) < 2 {
+		if arg == "" {
 			return nil, errors.New("unix client: no address supplied")
 		}
-		return unixClient(parts[1])
+		return unixClient(arg)
 	case "unix-server":
-		if len(parts) < 2 {
+		if arg == "" {
 			return nil, errors.New("unix server: no address supplied")
 		}
-		return unixServer(parts[1])
+		return unixServer(arg)
 	case "ws":
-		if len(parts) < 2 {
+		if arg == "" {
 			return nil, errors.New("ws client: no address supplied")
 		}
-		return wsClient("ws://" + parts[1])
+		return wsClient("ws://" + arg)
 	case "wss":
-		if len(parts) < 2 {
+		if arg == "" {
 			return nil, errors.New("wss client: no address supplied")
 		}
-		return wsClient("wss://" + parts[1])
+		return wsClient("wss://" + arg)
 	case "ws-server":
-		if len(parts) < 2 {
+		if arg == "" {
 			return nil, errors.New("ws server: no address supplied")
 		}
-		return wsServer(parts[1])
+		return wsServer(arg)
 	default:
 		return nil, errors.New("unknown out protocol: " + proto)
 	}
+}
+
+// Register a new output protocol.
+func Register(proto string, fn Handler) {
+	protocols.Store(proto, fn)
 }
