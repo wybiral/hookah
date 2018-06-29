@@ -47,6 +47,18 @@ func ExampleNewInput_tcpListen() {
 	r, err = hookah.NewInput("tcp-listen://localhost:8080")
 }
 
+// Create UDP listen input.
+func ExampleNewInput_udpListen() {
+	r, err = hookah.NewInput("udp-listen://localhost:8080")
+}
+
+// Create UDP multicast listen input.
+// Here the network interface is set to eth0 but can be ommitted to use the
+// default.
+func ExampleNewInput_udpMulticast() {
+	r, err = hookah.NewInput("udp-multicast://eth0,localhost:8080")
+}
+
 // Create Unix client input.
 func ExampleNewInput_unixClient() {
 	r, err = hookah.NewInput("unix://path/to/sock")
@@ -107,6 +119,11 @@ func ExampleNewOutput_tcpClient() {
 // Create TCP listen output.
 func ExampleNewOutput_tcpListen() {
 	w, err = hookah.NewOutput("tcp-listen://localhost:8080")
+}
+
+// Create UDP client output.
+func ExampleNewOutput_udpClient() {
+	w, err = hookah.NewOutput("udp://localhost:8080")
 }
 
 // Create Unix client output.
