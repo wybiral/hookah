@@ -3,6 +3,7 @@ package output
 import (
 	"io"
 	"net/http"
+	"net/url"
 
 	"github.com/gorilla/websocket"
 	"github.com/wybiral/hookah/pkg/fanout"
@@ -23,10 +24,10 @@ var upgrader = websocket.Upgrader{
 }
 
 // WSListen creates a WebSocket listener and returns ReadCloser
-func WSListen(addr string) (io.WriteCloser, error) {
+func WSListen(path string, args url.Values) (io.WriteCloser, error) {
 	app := &wsListenApp{}
 	app.server = &http.Server{
-		Addr:    addr,
+		Addr:    path,
 		Handler: http.HandlerFunc(app.handle),
 	}
 	app.fan = fanout.New()

@@ -2,6 +2,7 @@ package input
 
 import (
 	"io"
+	"net/url"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -17,13 +18,13 @@ type wsconn struct {
 }
 
 // WS Creates a WebSocket client and returns ReadCloser
-func WS(addr string) (io.ReadCloser, error) {
-	return wsrequest("ws://" + addr)
+func WS(path string, args url.Values) (io.ReadCloser, error) {
+	return wsrequest("ws://" + path)
 }
 
 // WSS Creates a secure WebSocket client and returns ReadCloser
-func WSS(addr string) (io.ReadCloser, error) {
-	return wsrequest("wss://" + addr)
+func WSS(path string, args url.Values) (io.ReadCloser, error) {
+	return wsrequest("wss://" + path)
 }
 
 func wsrequest(addr string) (io.ReadCloser, error) {

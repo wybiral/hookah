@@ -3,26 +3,22 @@ package input
 import (
 	"io"
 	"net"
-	"strings"
+	"net/url"
 )
 
 // UDPMulticast creates a UDP multicast listener and returns ReadCloser
-func UDPMulticast(arg string) (io.ReadCloser, error) {
-	var addr string
+func UDPMulticast(path string, args url.Values) (io.ReadCloser, error) {
 	var err error
 	var iface *net.Interface
-	parts := strings.SplitN(arg, ",", 2)
-	if len(parts) == 1 {
-		addr = parts[0]
-	} else {
-		addr = parts[1]
+	ifi := args.Get("iface")
+	if len(ifi) > 0 {
 		// If interface is supplied, look it up
-		iface, err = net.InterfaceByName(parts[0])
+		iface, err = net.InterfaceByName(ifi)
 		if err != nil {
 			return nil, err
 		}
 	}
-	a, err := net.ResolveUDPAddr("udp", addr)
+	a, err := net.ResolveUDPAddr("udp", path)
 	if err != nil {
 		return nil, err
 	}

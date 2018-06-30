@@ -3,6 +3,7 @@ package output
 import (
 	"io"
 	"net/http"
+	"net/url"
 
 	"github.com/wybiral/hookah/pkg/fanout"
 )
@@ -13,10 +14,10 @@ type httpListenApp struct {
 }
 
 // HTTPListen creates an HTTP listener and returns WriteCloser
-func HTTPListen(addr string) (io.WriteCloser, error) {
+func HTTPListen(path string, args url.Values) (io.WriteCloser, error) {
 	app := &httpListenApp{}
 	app.server = &http.Server{
-		Addr:    addr,
+		Addr:    path,
 		Handler: http.HandlerFunc(app.handle),
 	}
 	app.fan = fanout.New()

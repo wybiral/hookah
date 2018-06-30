@@ -3,9 +3,10 @@ package output
 import (
 	"io"
 	"net"
+	"net/url"
 )
 
 // Unix creates a Unix client and returns WriteCloser
-func Unix(addr string) (io.WriteCloser, error) {
-	return net.Dial("unix", addr)
+func Unix(path string, args url.Values) (io.WriteCloser, error) {
+	return net.Dial("unix", path)
 }

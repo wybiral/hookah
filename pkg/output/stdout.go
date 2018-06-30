@@ -2,15 +2,16 @@ package output
 
 import (
 	"io"
+	"net/url"
 	"os"
 )
 
 // Stdout returns stdout WriteCloser.
-func Stdout(arg string) (io.WriteCloser, error) {
+func Stdout(path string, args url.Values) (io.WriteCloser, error) {
 	return os.Stdout, nil
 }
 
 // Stderr returns stderr WriteCloser.
-func Stderr(arg string) (io.WriteCloser, error) {
+func Stderr(path string, args url.Values) (io.WriteCloser, error) {
 	return os.Stderr, nil
 }

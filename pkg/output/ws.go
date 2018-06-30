@@ -2,6 +2,7 @@ package output
 
 import (
 	"io"
+	"net/url"
 	"os"
 	"sync"
 
@@ -16,13 +17,13 @@ type wsconn struct {
 }
 
 // WS creates a WebSocket client and returns WriteCloser
-func WS(addr string) (io.WriteCloser, error) {
-	return wsrequest("ws://" + addr)
+func WS(path string, args url.Values) (io.WriteCloser, error) {
+	return wsrequest("ws://" + path)
 }
 
 // WSS creates a secure WebSocket client and returns WriteCloser
-func WSS(addr string) (io.WriteCloser, error) {
-	return wsrequest("wss://" + addr)
+func WSS(path string, args url.Values) (io.WriteCloser, error) {
+	return wsrequest("wss://" + path)
 }
 
 func wsrequest(addr string) (io.WriteCloser, error) {
