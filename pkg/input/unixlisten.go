@@ -6,6 +6,6 @@ import (
 )
 
 // UnixListen creates a Unix domain socket listener and returns ReadCloser
-func UnixListen(path string, args url.Values) (io.ReadCloser, error) {
+func UnixListen(path string, opts url.Values) (io.ReadCloser, error) {
 	return listen("unix", path)
 }

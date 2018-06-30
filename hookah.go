@@ -97,6 +97,7 @@ func (a *API) registerInputs() {
 	a.RegisterInput("http", "http://address", input.HTTP)
 	a.RegisterInput("https", "https://address", input.HTTPS)
 	a.RegisterInput("http-listen", "http-listen://address", input.HTTPListen)
+	a.RegisterInput("serial", "serial://device?baud=baudrate", input.Serial)
 	a.RegisterInput("stdin", "stdin", input.Stdin)
 	a.RegisterInput("tcp", "tcp://address", input.TCP)
 	a.RegisterInput("tcp-listen", "tcp-listen://address", input.TCPListen)
