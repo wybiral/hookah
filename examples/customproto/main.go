@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/url"
 	"time"
 
 	"github.com/wybiral/hookah"
@@ -41,11 +42,11 @@ type numbers struct {
 
 // Input handlers take an arg string and return an io.ReadCloser for the input
 // stream (or an error).
-func numbersHandler(arg string) (io.ReadCloser, error) {
+func numbersHandler(path string, args url.Values) (io.ReadCloser, error) {
 	var counter int64
-	if arg == "odd" {
+	if path == "odd" {
 		counter = 1
-	} else if arg == "even" {
+	} else if path == "even" {
 		counter = 2
 	} else {
 		return nil, errors.New("numbers requires: odd or even")

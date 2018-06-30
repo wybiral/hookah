@@ -3,16 +3,17 @@ package output
 import (
 	"io"
 	"net/http"
+	"net/url"
 )
 
 // HTTP creates an HTTP client and returns WriteCloser
-func HTTP(addr string) (io.WriteCloser, error) {
-	return httprequest("http://" + addr)
+func HTTP(path string, args url.Values) (io.WriteCloser, error) {
+	return httprequest("http://" + path)
 }
 
 // HTTPS creates an HTTPS client and returns WriteCloser
-func HTTPS(addr string) (io.WriteCloser, error) {
-	return httprequest("https://" + addr)
+func HTTPS(path string, args url.Values) (io.WriteCloser, error) {
+	return httprequest("https://" + path)
 }
 
 func httprequest(addr string) (io.WriteCloser, error) {

@@ -3,6 +3,7 @@ package input
 import (
 	"io"
 	"net/http"
+	"net/url"
 	"sync"
 )
 
@@ -17,10 +18,10 @@ type httpListenApp struct {
 }
 
 // HTTPListen creates an HTTP listener and returns ReadCloser
-func HTTPListen(addr string) (io.ReadCloser, error) {
+func HTTPListen(path string, args url.Values) (io.ReadCloser, error) {
 	app := &httpListenApp{}
 	app.server = &http.Server{
-		Addr:    addr,
+		Addr:    path,
 		Handler: http.HandlerFunc(app.handle),
 	}
 	app.ch = make(chan []byte)

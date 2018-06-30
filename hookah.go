@@ -4,6 +4,7 @@ package hookah
 import (
 	"errors"
 	"io"
+	"net/url"
 	"strings"
 	"sync"
 
@@ -45,22 +46,28 @@ func New() *API {
 
 // NewInput parses an input option string and returns a new ReadCloser.
 func (a *API) NewInput(opts string) (io.ReadCloser, error) {
-	proto, arg := parseOptions(opts)
+	proto, path, args, err := parseOptions(opts)
+	if err != nil {
+		return nil, err
+	}
 	reg, ok := a.inputHandlers[proto]
 	if !ok {
 		return nil, errors.New("unknown input protocol: " + proto)
 	}
-	return reg.handler(arg)
+	return reg.handler(path, args)
 }
 
 // NewOutput parses an output option string and returns a new WriteCloser.
 func (a *API) NewOutput(opts string) (io.WriteCloser, error) {
-	proto, arg := parseOptions(opts)
+	proto, path, args, err := parseOptions(opts)
+	if err != nil {
+		return nil, err
+	}
 	reg, ok := a.outputHandlers[proto]
 	if !ok {
 		return nil, errors.New("unknown output protocol: " + proto)
 	}
-	return reg.handler(arg)
+	return reg.handler(path, args)
 }
 
 // RegisterInput registers a new input protocol.
@@ -119,11 +126,17 @@ func (a *API) registerOutputs() {
 	a.RegisterOutput("ws-listen", "ws-listen://address", output.WSListen)
 }
 
-func parseOptions(opts string) (proto, arg string) {
-	parts := strings.SplitN(opts, "://", 2)
-	proto = parts[0]
-	if len(parts) > 1 {
-		arg = parts[1]
+func parseOptions(opts string) (proto, path string, args url.Values, err error) {
+	protopath := strings.SplitN(opts, "://", 2)
+	proto = protopath[0]
+	if len(protopath) == 1 {
+		return
 	}
+	pathargs := strings.SplitN(protopath[1], "?", 2)
+	path = pathargs[0]
+	if len(pathargs) == 1 {
+		return
+	}
+	args, err = url.ParseQuery(pathargs[1])
 	return
 }

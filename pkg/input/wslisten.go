@@ -3,6 +3,7 @@ package input
 import (
 	"io"
 	"net/http"
+	"net/url"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -28,10 +29,10 @@ var upgrader = websocket.Upgrader{
 }
 
 // WSListen creates a WebSocket listener and returns ReadCloser
-func WSListen(addr string) (io.ReadCloser, error) {
+func WSListen(path string, args url.Values) (io.ReadCloser, error) {
 	app := &wsListenApp{}
 	app.server = &http.Server{
-		Addr:    addr,
+		Addr:    path,
 		Handler: http.HandlerFunc(app.handle),
 	}
 	app.ch = make(chan []byte)
