@@ -14,16 +14,18 @@ import (
 )
 
 func main() {
+	// Create hookah API instance
+	h := hookah.New()
 	// Register new protocol
-	hookah.RegisterInput("numbers", numbersHandler)
+	h.RegisterInput("numbers", "numbers://parity", numbersHandler)
 	// Create hookah input (using new numbers:// protocol)
-	r, err := hookah.NewInput("numbers://odd")
+	r, err := h.NewInput("numbers://odd")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer r.Close()
 	// Create hookah output (stdout)
-	w, err := hookah.NewOutput("stdout")
+	w, err := h.NewOutput("stdout")
 	if err != nil {
 		log.Fatal(err)
 	}

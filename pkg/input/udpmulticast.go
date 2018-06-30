@@ -6,8 +6,8 @@ import (
 	"strings"
 )
 
-// Create a UDP multicast listener and return as ReadCloser
-func udpMulticast(arg string) (io.ReadCloser, error) {
+// UDPMulticast creates a UDP multicast listener and returns ReadCloser
+func UDPMulticast(arg string) (io.ReadCloser, error) {
 	var addr string
 	var err error
 	var iface *net.Interface

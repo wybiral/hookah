@@ -5,8 +5,8 @@ import (
 	"net"
 )
 
-// Create a UDP listener and return as ReadCloser
-func udpListen(addr string) (io.ReadCloser, error) {
+// UDPListen creates a UDP listener and returns ReadCloser
+func UDPListen(addr string) (io.ReadCloser, error) {
 	a, err := net.ResolveUDPAddr("udp", addr)
 	if err != nil {
 		return nil, err

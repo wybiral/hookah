@@ -4,7 +4,7 @@ import (
 	"io"
 )
 
-// Create a Unix listener and return as ReadCloser
-func unixListen(addr string) (io.ReadCloser, error) {
+// UnixListen creates a Unix domain socket listener and returns ReadCloser
+func UnixListen(addr string) (io.ReadCloser, error) {
 	return listen("unix", addr)
 }

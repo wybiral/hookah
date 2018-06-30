@@ -30,14 +30,16 @@ type certUpdate struct {
 }
 
 func main() {
+	// Create hookah API instance
+	h := hookah.New()
 	// Create hookah input (certstream WebSocket API)
-	r, err := hookah.NewInput("wss://certstream.calidog.io")
+	r, err := h.NewInput("wss://certstream.calidog.io")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer r.Close()
 	// Create hookah output (stdout)
-	w, err := hookah.NewOutput("stdout")
+	w, err := h.NewOutput("stdout")
 	if err != nil {
 		log.Fatal(err)
 	}

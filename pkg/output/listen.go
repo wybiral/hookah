@@ -12,7 +12,7 @@ type listenApp struct {
 	fan *fanout.Fanout
 }
 
-// Create a listen server and return as ReadCloser
+// listen creates a generic listen server and returns ReadCloser
 func listen(network, addr string) (io.WriteCloser, error) {
 	app := &listenApp{}
 	ln, err := net.Listen(network, addr)

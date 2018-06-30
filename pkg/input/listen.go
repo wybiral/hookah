@@ -16,7 +16,7 @@ type listenApp struct {
 	top []byte
 }
 
-// Create a listener and return as ReadCloser
+// listen creates a generic listener and returns ReadCloser
 func listen(network, addr string) (io.ReadCloser, error) {
 	app := &listenApp{}
 	ln, err := net.Listen(network, addr)

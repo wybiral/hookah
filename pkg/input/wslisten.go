@@ -27,8 +27,8 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-// Create a WebSocket listener and return as ReadCloser
-func wsListen(addr string) (io.ReadCloser, error) {
+// WSListen creates a WebSocket listener and returns ReadCloser
+func WSListen(addr string) (io.ReadCloser, error) {
 	app := &wsListenApp{}
 	app.server = &http.Server{
 		Addr:    addr,
