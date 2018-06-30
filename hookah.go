@@ -14,7 +14,7 @@ import (
 )
 
 // Version of hookah API
-const Version = "1.0.0"
+const Version = "1.0.1"
 
 // API is an instance of the Hookah API.
 type API struct {
