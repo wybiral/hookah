@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-// File creates a file input and return as ReadCloser
+// File creates a file input and returns ReadCloser
 func File(path string) (io.ReadCloser, error) {
 	return os.Open(path)
 }

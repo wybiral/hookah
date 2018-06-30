@@ -16,12 +16,12 @@ type wsconn struct {
 	reader io.Reader
 }
 
-// WS Creates a WebSocket client and returns a ReadCloser
+// WS Creates a WebSocket client and returns ReadCloser
 func WS(addr string) (io.ReadCloser, error) {
 	return wsrequest("ws://" + addr)
 }
 
-// WSS Creates a secure WebSocket client and returns a ReadCloser
+// WSS Creates a secure WebSocket client and returns ReadCloser
 func WSS(addr string) (io.ReadCloser, error) {
 	return wsrequest("wss://" + addr)
 }

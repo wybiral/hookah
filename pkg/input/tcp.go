@@ -5,7 +5,7 @@ import (
 	"net"
 )
 
-// TCP creates a TCP client and return as ReadCloser
+// TCP creates a TCP client and returns ReadCloser
 func TCP(addr string) (io.ReadCloser, error) {
 	return net.Dial("tcp", addr)
 }

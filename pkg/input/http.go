@@ -5,12 +5,12 @@ import (
 	"net/http"
 )
 
-// HTTP creates a streaming HTTP client and return as ReadCloser
+// HTTP creates a streaming HTTP client and returns ReadCloser
 func HTTP(addr string) (io.ReadCloser, error) {
 	return httprequest("http://" + addr)
 }
 
-// HTTPS creates a streaming HTTPS client and return as ReadCloser
+// HTTPS creates a streaming HTTPS client and returns as ReadCloser
 func HTTPS(addr string) (io.ReadCloser, error) {
 	return httprequest("https://" + addr)
 }

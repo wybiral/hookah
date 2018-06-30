@@ -15,12 +15,12 @@ type wsconn struct {
 	mu *sync.Mutex
 }
 
-// WS creates a WebSocket client and return as WriteCloser
+// WS creates a WebSocket client and returns WriteCloser
 func WS(addr string) (io.WriteCloser, error) {
 	return wsrequest("ws://" + addr)
 }
 
-// WSS creates a secure WebSocket client and return as WriteCloser
+// WSS creates a secure WebSocket client and returns WriteCloser
 func WSS(addr string) (io.WriteCloser, error) {
 	return wsrequest("wss://" + addr)
 }

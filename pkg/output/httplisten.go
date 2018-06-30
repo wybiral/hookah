@@ -12,7 +12,7 @@ type httpListenApp struct {
 	fan    *fanout.Fanout
 }
 
-// HTTPListen creates an HTTP listener and return as WriteCloser
+// HTTPListen creates an HTTP listener and returns WriteCloser
 func HTTPListen(addr string) (io.WriteCloser, error) {
 	app := &httpListenApp{}
 	app.server = &http.Server{

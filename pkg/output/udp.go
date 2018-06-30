@@ -5,7 +5,7 @@ import (
 	"net"
 )
 
-// UDP creates a UDP client and return as WriteCloser
+// UDP creates a UDP client and returns WriteCloser
 func UDP(addr string) (io.WriteCloser, error) {
 	return net.Dial("udp", addr)
 }

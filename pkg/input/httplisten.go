@@ -16,7 +16,7 @@ type httpListenApp struct {
 	top []byte
 }
 
-// HTTPListen creates an HTTP listener and return as ReadCloser
+// HTTPListen creates an HTTP listener and returns ReadCloser
 func HTTPListen(addr string) (io.ReadCloser, error) {
 	app := &httpListenApp{}
 	app.server = &http.Server{
