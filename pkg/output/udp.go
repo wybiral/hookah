@@ -7,6 +7,6 @@ import (
 )
 
 // UDP creates a UDP client and returns WriteCloser
-func UDP(path string, args url.Values) (io.WriteCloser, error) {
-	return net.Dial("udp", path)
+func UDP(addr string, opts url.Values) (io.WriteCloser, error) {
+	return net.Dial("udp", addr)
 }
