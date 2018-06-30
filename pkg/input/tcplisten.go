@@ -6,6 +6,6 @@ import (
 )
 
 // TCPListen creates a TCP listener and returns ReadCloser
-func TCPListen(path string, args url.Values) (io.ReadCloser, error) {
-	return listen("tcp", path)
+func TCPListen(addr string, opts url.Values) (io.ReadCloser, error) {
+	return listen("tcp", addr)
 }

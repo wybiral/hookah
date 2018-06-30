@@ -7,6 +7,6 @@ import (
 )
 
 // Stdin returns stdin ReadCloser.
-func Stdin(path string, args url.Values) (io.ReadCloser, error) {
+func Stdin(path string, opts url.Values) (io.ReadCloser, error) {
 	return os.Stdin, nil
 }

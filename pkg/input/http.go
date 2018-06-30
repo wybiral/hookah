@@ -7,13 +7,13 @@ import (
 )
 
 // HTTP creates a streaming HTTP client and returns ReadCloser
-func HTTP(path string, args url.Values) (io.ReadCloser, error) {
-	return httprequest("http://" + path)
+func HTTP(addr string, opts url.Values) (io.ReadCloser, error) {
+	return httprequest("http://" + addr)
 }
 
 // HTTPS creates a streaming HTTPS client and returns as ReadCloser
-func HTTPS(path string, args url.Values) (io.ReadCloser, error) {
-	return httprequest("https://" + path)
+func HTTPS(addr string, opts url.Values) (io.ReadCloser, error) {
+	return httprequest("https://" + addr)
 }
 
 func httprequest(addr string) (io.ReadCloser, error) {

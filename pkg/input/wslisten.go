@@ -29,10 +29,10 @@ var upgrader = websocket.Upgrader{
 }
 
 // WSListen creates a WebSocket listener and returns ReadCloser
-func WSListen(path string, args url.Values) (io.ReadCloser, error) {
+func WSListen(addr string, opts url.Values) (io.ReadCloser, error) {
 	app := &wsListenApp{}
 	app.server = &http.Server{
-		Addr:    path,
+		Addr:    addr,
 		Handler: http.HandlerFunc(app.handle),
 	}
 	app.ch = make(chan []byte)

@@ -42,11 +42,11 @@ type numbers struct {
 
 // Input handlers take an arg string and return an io.ReadCloser for the input
 // stream (or an error).
-func numbersHandler(path string, args url.Values) (io.ReadCloser, error) {
+func numbersHandler(arg string, opts url.Values) (io.ReadCloser, error) {
 	var counter int64
-	if path == "odd" {
+	if arg == "odd" {
 		counter = 1
-	} else if path == "even" {
+	} else if arg == "even" {
 		counter = 2
 	} else {
 		return nil, errors.New("numbers requires: odd or even")

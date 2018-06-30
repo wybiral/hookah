@@ -45,8 +45,8 @@ func New() *API {
 }
 
 // NewInput parses an input option string and returns a new ReadCloser.
-func (a *API) NewInput(opts string) (io.ReadCloser, error) {
-	proto, path, args, err := parseOptions(opts)
+func (a *API) NewInput(op string) (io.ReadCloser, error) {
+	proto, arg, opts, err := parseOptions(op)
 	if err != nil {
 		return nil, err
 	}
@@ -54,12 +54,12 @@ func (a *API) NewInput(opts string) (io.ReadCloser, error) {
 	if !ok {
 		return nil, errors.New("unknown input protocol: " + proto)
 	}
-	return reg.handler(path, args)
+	return reg.handler(arg, opts)
 }
 
 // NewOutput parses an output option string and returns a new WriteCloser.
-func (a *API) NewOutput(opts string) (io.WriteCloser, error) {
-	proto, path, args, err := parseOptions(opts)
+func (a *API) NewOutput(op string) (io.WriteCloser, error) {
+	proto, arg, opts, err := parseOptions(op)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func (a *API) NewOutput(opts string) (io.WriteCloser, error) {
 	if !ok {
 		return nil, errors.New("unknown output protocol: " + proto)
 	}
-	return reg.handler(path, args)
+	return reg.handler(arg, opts)
 }
 
 // RegisterInput registers a new input protocol.
@@ -126,17 +126,17 @@ func (a *API) registerOutputs() {
 	a.RegisterOutput("ws-listen", "ws-listen://address", output.WSListen)
 }
 
-func parseOptions(opts string) (proto, path string, args url.Values, err error) {
-	protopath := strings.SplitN(opts, "://", 2)
-	proto = protopath[0]
-	if len(protopath) == 1 {
+func parseOptions(op string) (proto, arg string, opts url.Values, err error) {
+	protoarg := strings.SplitN(op, "://", 2)
+	proto = protoarg[0]
+	if len(protoarg) == 1 {
 		return
 	}
-	pathargs := strings.SplitN(protopath[1], "?", 2)
-	path = pathargs[0]
-	if len(pathargs) == 1 {
+	argopts := strings.SplitN(protoarg[1], "?", 2)
+	arg = argopts[0]
+	if len(argopts) == 1 {
 		return
 	}
-	args, err = url.ParseQuery(pathargs[1])
+	opts, err = url.ParseQuery(argopts[1])
 	return
 }

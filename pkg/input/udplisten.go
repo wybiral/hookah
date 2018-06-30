@@ -7,8 +7,8 @@ import (
 )
 
 // UDPListen creates a UDP listener and returns ReadCloser
-func UDPListen(path string, args url.Values) (io.ReadCloser, error) {
-	a, err := net.ResolveUDPAddr("udp", path)
+func UDPListen(addr string, opts url.Values) (io.ReadCloser, error) {
+	a, err := net.ResolveUDPAddr("udp", addr)
 	if err != nil {
 		return nil, err
 	}
