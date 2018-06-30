@@ -115,6 +115,7 @@ func (a *API) registerOutputs() {
 	a.RegisterOutput("http", "http://address", output.HTTP)
 	a.RegisterOutput("https", "https://address", output.HTTPS)
 	a.RegisterOutput("http-listen", "http-listen://address", output.HTTPListen)
+	a.RegisterOutput("serial", "serial://device?baud=baudrate", output.Serial)
 	a.RegisterOutput("stderr", "stderr", output.Stderr)
 	a.RegisterOutput("stdout", "stdout", output.Stdout)
 	a.RegisterOutput("tcp", "tcp://address", output.TCP)
