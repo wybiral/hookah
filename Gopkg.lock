@@ -7,9 +7,21 @@
   revision = "ea4d1f681babbce9545c9c5f3d5194a789c89f5b"
   version = "v1.2.0"
 
+[[projects]]
+  branch = "master"
+  name = "github.com/jacobsa/go-serial"
+  packages = ["serial"]
+  revision = "15cf729a72d49e837fa047a4142fa6e4d5ab45a1"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/sys"
+  packages = ["unix"]
+  revision = "7138fd3d9dc8335c567ca206f4333fb75eb05d56"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "941e8dbe52e16e8a7dff4068b7ba53ae69a5748b29fbf2bcb5df3a063ac52261"
+  inputs-digest = "b6f9351f866327a86b06bcde8c7bb77a93964551bdab59a55c29df63d32b57e6"
   solver-name = "gps-cdcl"
   solver-version = 1
