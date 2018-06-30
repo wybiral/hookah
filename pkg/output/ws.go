@@ -17,13 +17,13 @@ type wsconn struct {
 }
 
 // WS creates a WebSocket client and returns WriteCloser
-func WS(path string, args url.Values) (io.WriteCloser, error) {
-	return wsrequest("ws://" + path)
+func WS(addr string, opts url.Values) (io.WriteCloser, error) {
+	return wsrequest("ws://" + addr)
 }
 
 // WSS creates a secure WebSocket client and returns WriteCloser
-func WSS(path string, args url.Values) (io.WriteCloser, error) {
-	return wsrequest("wss://" + path)
+func WSS(addr string, opts url.Values) (io.WriteCloser, error) {
+	return wsrequest("wss://" + addr)
 }
 
 func wsrequest(addr string) (io.WriteCloser, error) {

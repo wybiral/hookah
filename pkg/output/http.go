@@ -7,13 +7,13 @@ import (
 )
 
 // HTTP creates an HTTP client and returns WriteCloser
-func HTTP(path string, args url.Values) (io.WriteCloser, error) {
-	return httprequest("http://" + path)
+func HTTP(addr string, args url.Values) (io.WriteCloser, error) {
+	return httprequest("http://" + addr)
 }
 
 // HTTPS creates an HTTPS client and returns WriteCloser
-func HTTPS(path string, args url.Values) (io.WriteCloser, error) {
-	return httprequest("https://" + path)
+func HTTPS(addr string, args url.Values) (io.WriteCloser, error) {
+	return httprequest("https://" + addr)
 }
 
 func httprequest(addr string) (io.WriteCloser, error) {

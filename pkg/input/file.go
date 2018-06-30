@@ -7,6 +7,6 @@ import (
 )
 
 // File creates a file input and returns ReadCloser
-func File(path string, args url.Values) (io.ReadCloser, error) {
+func File(path string, opts url.Values) (io.ReadCloser, error) {
 	return os.Open(path)
 }
