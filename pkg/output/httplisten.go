@@ -14,10 +14,10 @@ type httpListenApp struct {
 }
 
 // HTTPListen creates an HTTP listener and returns WriteCloser
-func HTTPListen(path string, args url.Values) (io.WriteCloser, error) {
+func HTTPListen(addr string, opts url.Values) (io.WriteCloser, error) {
 	app := &httpListenApp{}
 	app.server = &http.Server{
-		Addr:    path,
+		Addr:    addr,
 		Handler: http.HandlerFunc(app.handle),
 	}
 	app.fan = fanout.New()

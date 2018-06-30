@@ -7,6 +7,6 @@ import (
 )
 
 // TCP creates a TCP client and returns WriteCloser
-func TCP(path string, args url.Values) (io.WriteCloser, error) {
-	return net.Dial("tcp", path)
+func TCP(addr string, args url.Values) (io.WriteCloser, error) {
+	return net.Dial("tcp", addr)
 }

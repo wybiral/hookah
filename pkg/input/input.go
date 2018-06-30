@@ -7,7 +7,7 @@ import (
 )
 
 // Handler is the function type for user defined input protocols.
-type Handler func(path string, args url.Values) (io.ReadCloser, error)
+type Handler func(arg string, opts url.Values) (io.ReadCloser, error)
 
 // Buffer size used for incoming messages to servers
 const bufferSize = 4 * 1024

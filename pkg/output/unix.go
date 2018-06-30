@@ -7,6 +7,6 @@ import (
 )
 
 // Unix creates a Unix client and returns WriteCloser
-func Unix(path string, args url.Values) (io.WriteCloser, error) {
+func Unix(path string, opts url.Values) (io.WriteCloser, error) {
 	return net.Dial("unix", path)
 }
