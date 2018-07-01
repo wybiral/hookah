@@ -20,12 +20,16 @@ func Serial(device string, opts url.Values) (io.ReadCloser, error) {
 		return nil, err
 	}
 	options := serial.OpenOptions{
-		PortName:              device,
-		BaudRate:              uint(baud),
-		DataBits:              8,
-		StopBits:              1,
-		ParityMode:            serial.PARITY_NONE,
-		InterCharacterTimeout: 200,
+		PortName:               device,
+		BaudRate:               uint(baud),
+		DataBits:               8,
+		StopBits:               1,
+		ParityMode:             serial.PARITY_NONE,
+		InterCharacterTimeout:  100,
+		MinimumReadSize:        0,
+		Rs485Enable:            false,
+		Rs485RtsHighDuringSend: false,
+		Rs485RtsHighAfterSend:  false,
 	}
 	return serial.Open(options)
 }
