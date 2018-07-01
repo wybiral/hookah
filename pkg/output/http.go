@@ -22,10 +22,35 @@ func httprequest(addr string) (io.WriteCloser, error) {
 	if err != nil {
 		return nil, err
 	}
+	e := make(chan error)
 	go func() {
-		res, _ := http.DefaultClient.Do(req)
-		res.Body.Close()
-		pw.Close()
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			e <- err
+			return
+		}
+		e <- res.Body.Close()
 	}()
-	return pw, nil
+	cl := &httpClient{
+		w: pw,
+		e: e,
+	}
+	return cl, nil
+}
+
+type httpClient struct {
+	w io.WriteCloser
+	e chan error
+}
+
+func (h *httpClient) Write(b []byte) (int, error) {
+	return h.w.Write(b)
+}
+
+func (h *httpClient) Close() error {
+	err := h.w.Close()
+	if err != nil {
+		return err
+	}
+	return <-h.e
 }

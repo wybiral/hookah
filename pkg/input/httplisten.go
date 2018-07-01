@@ -56,9 +56,12 @@ func (app *httpListenApp) handle(w http.ResponseWriter, r *http.Request) {
 	for {
 		b := make([]byte, bufferSize)
 		n, err := r.Body.Read(b)
-		if err != nil {
+		if err != nil && err != io.EOF {
 			return
 		}
 		app.ch <- b[:n]
+		if err == io.EOF {
+			return
+		}
 	}
 }
