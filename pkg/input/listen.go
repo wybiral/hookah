@@ -64,12 +64,12 @@ func (app *listenApp) serve() {
 
 func (app *listenApp) handle(conn net.Conn) {
 	defer conn.Close()
-	buffer := make([]byte, bufferSize)
 	for {
-		n, err := conn.Read(buffer)
+		b := make([]byte, bufferSize)
+		n, err := conn.Read(b)
 		if err != nil {
 			return
 		}
-		app.ch <- buffer[:n]
+		app.ch <- b[:n]
 	}
 }
