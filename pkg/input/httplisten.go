@@ -53,12 +53,15 @@ func (app *httpListenApp) Close() error {
 
 func (app *httpListenApp) handle(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	buffer := make([]byte, bufferSize)
 	for {
-		n, err := r.Body.Read(buffer)
-		if err != nil {
+		b := make([]byte, bufferSize)
+		n, err := r.Body.Read(b)
+		if err != nil && err != io.EOF {
 			return
 		}
-		app.ch <- buffer[:n]
+		app.ch <- b[:n]
+		if err == io.EOF {
+			return
+		}
 	}
 }
