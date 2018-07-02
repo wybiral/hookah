@@ -1,7 +1,6 @@
 package input
 
 import (
-	"errors"
 	"io"
 	"net/url"
 	"strconv"
@@ -13,7 +12,7 @@ import (
 func Serial(device string, opts url.Values) (io.ReadCloser, error) {
 	baudstr := opts.Get("baud")
 	if len(baudstr) == 0 {
-		return nil, errors.New("required: baud")
+		baudstr = "9600"
 	}
 	baud, err := strconv.ParseUint(baudstr, 10, 32)
 	if err != nil {
