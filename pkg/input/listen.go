@@ -3,17 +3,16 @@ package input
 import (
 	"io"
 	"net"
-	"sync"
+
+	"github.com/wybiral/hookah/pkg/chreader"
 )
 
 type listenApp struct {
 	ln net.Listener
 	// Channel of messages
 	ch chan []byte
-	// Lock for changing top
-	mu *sync.Mutex
-	// Current message being read
-	top []byte
+	// ch Reader
+	r io.Reader
 }
 
 // listen creates a generic listener and returns ReadCloser
@@ -25,28 +24,17 @@ func listen(network, addr string) (io.ReadCloser, error) {
 	}
 	app.ln = ln
 	app.ch = make(chan []byte)
-	app.mu = &sync.Mutex{}
-	app.top = nil
+	app.r = chreader.New(app.ch)
 	go app.serve()
 	return app, nil
 }
 
 func (app *listenApp) Read(b []byte) (int, error) {
-	app.mu.Lock()
-	defer app.mu.Unlock()
-	if len(app.top) == 0 {
-		app.top = <-app.ch
-		if len(app.top) == 0 {
-			// ch is closed
-			return 0, io.EOF
-		}
-	}
-	n := copy(b, app.top)
-	app.top = app.top[n:]
-	return n, nil
+	return app.r.Read(b)
 }
 
 func (app *listenApp) Close() error {
+	// Closing ch causes r.Read to return EOF
 	close(app.ch)
 	return app.ln.Close()
 }

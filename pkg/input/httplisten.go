@@ -4,17 +4,16 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"sync"
+
+	"github.com/wybiral/hookah/pkg/chreader"
 )
 
 type httpListenApp struct {
 	server *http.Server
 	// Channel of messages
 	ch chan []byte
-	// Lock for changing top
-	mu *sync.Mutex
-	// Current message being read
-	top []byte
+	// ch Reader
+	r io.Reader
 }
 
 // HTTPListen creates an HTTP listener and returns ReadCloser
@@ -25,28 +24,17 @@ func HTTPListen(addr string, opts url.Values) (io.ReadCloser, error) {
 		Handler: http.HandlerFunc(app.handle),
 	}
 	app.ch = make(chan []byte)
-	app.mu = &sync.Mutex{}
-	app.top = nil
+	app.r = chreader.New(app.ch)
 	go app.server.ListenAndServe()
 	return app, nil
 }
 
 func (app *httpListenApp) Read(b []byte) (int, error) {
-	app.mu.Lock()
-	defer app.mu.Unlock()
-	if len(app.top) == 0 {
-		app.top = <-app.ch
-		if len(app.top) == 0 {
-			// ch is closed
-			return 0, io.EOF
-		}
-	}
-	n := copy(b, app.top)
-	app.top = app.top[n:]
-	return n, nil
+	return app.r.Read(b)
 }
 
 func (app *httpListenApp) Close() error {
+	// Closing ch causes r.Read to return EOF
 	close(app.ch)
 	return app.server.Close()
 }

@@ -10,4 +10,4 @@ import (
 type Handler func(arg string, opts url.Values) (io.ReadCloser, error)
 
 // Buffer size used for incoming messages to servers
-const bufferSize = 4 * 1024
+const bufferSize = 8 * 1024
