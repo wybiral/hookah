@@ -3,9 +3,6 @@ A Swiss Army knife for data pipelines.
 
 [![GoDoc](https://godoc.org/github.com/wybiral/hookah?status.svg)](https://godoc.org/github.com/wybiral/hookah)
 
-### Demo video
-[![Watch demo](https://img.youtube.com/vi/AdFzK9sDywg/0.jpg)](https://www.youtube.com/watch?v=AdFzK9sDywg)
-
 # Build instructions
 ### go get
 ```
