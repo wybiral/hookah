@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/jacobsa/go-serial/serial"
+	"github.com/tarm/serial"
 )
 
 // Serial creates a serial output and returns WriteCloser
@@ -14,21 +14,13 @@ func Serial(device string, opts url.Values) (io.WriteCloser, error) {
 	if len(baudstr) == 0 {
 		baudstr = "9600"
 	}
-	baud, err := strconv.ParseUint(baudstr, 10, 32)
+	baud, err := strconv.ParseInt(baudstr, 10, 32)
 	if err != nil {
 		return nil, err
 	}
-	options := serial.OpenOptions{
-		PortName:               device,
-		BaudRate:               uint(baud),
-		DataBits:               8,
-		StopBits:               1,
-		ParityMode:             serial.PARITY_NONE,
-		InterCharacterTimeout:  100,
-		MinimumReadSize:        0,
-		Rs485Enable:            false,
-		Rs485RtsHighDuringSend: false,
-		Rs485RtsHighAfterSend:  false,
+	c := &serial.Config{
+		Name: device,
+		Baud: int(baud),
 	}
-	return serial.Open(options)
+	return serial.OpenPort(c)
 }

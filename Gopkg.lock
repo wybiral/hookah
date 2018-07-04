@@ -9,19 +9,19 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/jacobsa/go-serial"
-  packages = ["serial"]
-  revision = "15cf729a72d49e837fa047a4142fa6e4d5ab45a1"
+  name = "github.com/tarm/serial"
+  packages = ["."]
+  revision = "eaafced92e9619f03c72527efeab21e326f3bc36"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "7138fd3d9dc8335c567ca206f4333fb75eb05d56"
+  revision = "151529c776cdc58ddbe7963ba9af779f3577b419"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b6f9351f866327a86b06bcde8c7bb77a93964551bdab59a55c29df63d32b57e6"
+  inputs-digest = "739d61bcca4d6b2fd034651407206afb25510c29c9e6b0471e18b7058d4e0e26"
   solver-name = "gps-cdcl"
   solver-version = 1
