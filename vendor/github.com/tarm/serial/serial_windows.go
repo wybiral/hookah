@@ -1,29 +1,17 @@
-// Copyright 2011 Aaron Jacobs. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// +build windows
 
 package serial
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"sync"
 	"syscall"
+	"time"
 	"unsafe"
 )
 
-type serialPort struct {
+type Port struct {
 	f  *os.File
 	fd syscall.Handle
 	rl sync.Mutex
@@ -49,12 +37,12 @@ type structTimeouts struct {
 	WriteTotalTimeoutConstant   uint32
 }
 
-func openInternal(options OpenOptions) (io.ReadWriteCloser, error) {
-	if len(options.PortName) > 0 && options.PortName[0] != '\\' {
-		options.PortName = "\\\\.\\" + options.PortName
+func openPort(name string, baud int, databits byte, parity Parity, stopbits StopBits, readTimeout time.Duration) (p *Port, err error) {
+	if len(name) > 0 && name[0] != '\\' {
+		name = "\\\\.\\" + name
 	}
 
-	h, err := syscall.CreateFile(syscall.StringToUTF16Ptr(options.PortName),
+	h, err := syscall.CreateFile(syscall.StringToUTF16Ptr(name),
 		syscall.GENERIC_READ|syscall.GENERIC_WRITE,
 		0,
 		nil,
@@ -64,20 +52,20 @@ func openInternal(options OpenOptions) (io.ReadWriteCloser, error) {
 	if err != nil {
 		return nil, err
 	}
-	f := os.NewFile(uintptr(h), options.PortName)
+	f := os.NewFile(uintptr(h), name)
 	defer func() {
 		if err != nil {
 			f.Close()
 		}
 	}()
 
-	if err = setCommState(h, options); err != nil {
+	if err = setCommState(h, baud, databits, parity, stopbits); err != nil {
 		return nil, err
 	}
 	if err = setupComm(h, 64, 64); err != nil {
 		return nil, err
 	}
-	if err = setCommTimeouts(h, options); err != nil {
+	if err = setCommTimeouts(h, readTimeout); err != nil {
 		return nil, err
 	}
 	if err = setCommMask(h); err != nil {
@@ -92,7 +80,7 @@ func openInternal(options OpenOptions) (io.ReadWriteCloser, error) {
 	if err != nil {
 		return nil, err
 	}
-	port := new(serialPort)
+	port := new(Port)
 	port.f = f
 	port.fd = h
 	port.ro = ro
@@ -101,11 +89,11 @@ func openInternal(options OpenOptions) (io.ReadWriteCloser, error) {
 	return port, nil
 }
 
-func (p *serialPort) Close() error {
+func (p *Port) Close() error {
 	return p.f.Close()
 }
 
-func (p *serialPort) Write(buf []byte) (int, error) {
+func (p *Port) Write(buf []byte) (int, error) {
 	p.wl.Lock()
 	defer p.wl.Unlock()
 
@@ -120,9 +108,9 @@ func (p *serialPort) Write(buf []byte) (int, error) {
 	return getOverlappedResult(p.fd, p.wo)
 }
 
-func (p *serialPort) Read(buf []byte) (int, error) {
+func (p *Port) Read(buf []byte) (int, error) {
 	if p == nil || p.f == nil {
-		return 0, fmt.Errorf("Invalid port on read %v %v", p, p.f)
+		return 0, fmt.Errorf("Invalid port on read")
 	}
 
 	p.rl.Lock()
@@ -139,6 +127,12 @@ func (p *serialPort) Read(buf []byte) (int, error) {
 	return getOverlappedResult(p.fd, p.ro)
 }
 
+// Discards data written to the port but not transmitted,
+// or data received but not read
+func (p *Port) Flush() error {
+	return purgeComm(p.fd)
+}
+
 var (
 	nSetCommState,
 	nSetCommTimeouts,
@@ -146,7 +140,9 @@ var (
 	nSetupComm,
 	nGetOverlappedResult,
 	nCreateEvent,
-	nResetEvent uintptr
+	nResetEvent,
+	nPurgeComm,
+	nFlushFileBuffers uintptr
 )
 
 func init() {
@@ -163,6 +159,8 @@ func init() {
 	nGetOverlappedResult = getProcAddr(k32, "GetOverlappedResult")
 	nCreateEvent = getProcAddr(k32, "CreateEventW")
 	nResetEvent = getProcAddr(k32, "ResetEvent")
+	nPurgeComm = getProcAddr(k32, "PurgeComm")
+	nFlushFileBuffers = getProcAddr(k32, "FlushFileBuffers")
 }
 
 func getProcAddr(lib syscall.Handle, name string) uintptr {
@@ -173,30 +171,41 @@ func getProcAddr(lib syscall.Handle, name string) uintptr {
 	return addr
 }
 
-func setCommState(h syscall.Handle, options OpenOptions) error {
+func setCommState(h syscall.Handle, baud int, databits byte, parity Parity, stopbits StopBits) error {
 	var params structDCB
 	params.DCBlength = uint32(unsafe.Sizeof(params))
 
 	params.flags[0] = 0x01  // fBinary
 	params.flags[0] |= 0x10 // Assert DSR
 
-	if options.ParityMode != PARITY_NONE {
-		params.flags[0] |= 0x03 // fParity
-		params.Parity = byte(options.ParityMode)
+	params.BaudRate = uint32(baud)
+
+	params.ByteSize = databits
+
+	switch parity {
+	case ParityNone:
+		params.Parity = 0
+	case ParityOdd:
+		params.Parity = 1
+	case ParityEven:
+		params.Parity = 2
+	case ParityMark:
+		params.Parity = 3
+	case ParitySpace:
+		params.Parity = 4
+	default:
+		return ErrBadParity
 	}
 
-	if options.StopBits == 1 {
+	switch stopbits {
+	case Stop1:
 		params.StopBits = 0
-	} else if options.StopBits == 2 {
+	case Stop1Half:
+		params.StopBits = 1
+	case Stop2:
 		params.StopBits = 2
-	}
-
-	params.BaudRate = uint32(options.BaudRate)
-	params.ByteSize = byte(options.DataBits)
-
-	if options.RTSCTSFlowControl {
-		params.flags[0] |= 0x04 // fOutxCtsFlow = 0x1
-		params.flags[1] |= 0x20 // fRtsControl = RTS_CONTROL_HANDSHAKE (0x2)
+	default:
+		return ErrBadStopBits
 	}
 
 	r, _, err := syscall.Syscall(nSetCommState, 2, uintptr(h), uintptr(unsafe.Pointer(&params)), 0)
@@ -206,65 +215,48 @@ func setCommState(h syscall.Handle, options OpenOptions) error {
 	return nil
 }
 
-func setCommTimeouts(h syscall.Handle, options OpenOptions) error {
+func setCommTimeouts(h syscall.Handle, readTimeout time.Duration) error {
 	var timeouts structTimeouts
 	const MAXDWORD = 1<<32 - 1
-	timeoutConstant := uint32(round(float64(options.InterCharacterTimeout) / 100.0))
-	readIntervalTimeout := uint32(options.MinimumReadSize)
 
-	if timeoutConstant > 0 && readIntervalTimeout == 0 {
-		//Assume we're setting for non blocking IO.
-		timeouts.ReadIntervalTimeout = MAXDWORD
-		timeouts.ReadTotalTimeoutMultiplier = MAXDWORD
-		timeouts.ReadTotalTimeoutConstant = timeoutConstant
-	} else if readIntervalTimeout > 0 {
-		// Assume we want to block and wait for input.
-		timeouts.ReadIntervalTimeout = readIntervalTimeout
-		timeouts.ReadTotalTimeoutMultiplier = 1
-		timeouts.ReadTotalTimeoutConstant = 1
-	} else {
-		// No idea what we intended, use defaults
-		// default config does what it did before.
-		timeouts.ReadIntervalTimeout = MAXDWORD
-		timeouts.ReadTotalTimeoutMultiplier = MAXDWORD
-		timeouts.ReadTotalTimeoutConstant = MAXDWORD - 1
+	// blocking read by default
+	var timeoutMs int64 = MAXDWORD - 1
+
+	if readTimeout > 0 {
+		// non-blocking read
+		timeoutMs = readTimeout.Nanoseconds() / 1e6
+		if timeoutMs < 1 {
+			timeoutMs = 1
+		} else if timeoutMs > MAXDWORD-1 {
+			timeoutMs = MAXDWORD - 1
+		}
 	}
 
-	/*
-			Empirical testing has shown that to have non-blocking IO we need to set:
-				ReadTotalTimeoutConstant > 0 and
-				ReadTotalTimeoutMultiplier = MAXDWORD and
-				ReadIntervalTimeout = MAXDWORD
+	/* From http://msdn.microsoft.com/en-us/library/aa363190(v=VS.85).aspx
 
-				The documentation states that ReadIntervalTimeout is set in MS but
-				empirical investigation determines that it seems to interpret in units
-				of 100ms.
+		 For blocking I/O see below:
 
-				If InterCharacterTimeout is set at all it seems that the port will block
-				indefinitly until a character is received.  Not all circumstances have been
-				tested. The input of an expert would be appreciated.
+		 Remarks:
 
-			From http://msdn.microsoft.com/en-us/library/aa363190(v=VS.85).aspx
+		 If an application sets ReadIntervalTimeout and
+		 ReadTotalTimeoutMultiplier to MAXDWORD and sets
+		 ReadTotalTimeoutConstant to a value greater than zero and
+		 less than MAXDWORD, one of the following occurs when the
+		 ReadFile function is called:
 
-			 For blocking I/O see below:
+		 If there are any bytes in the input buffer, ReadFile returns
+		       immediately with the bytes in the buffer.
 
-			 Remarks:
+		 If there are no bytes in the input buffer, ReadFile waits
+	               until a byte arrives and then returns immediately.
 
-			 If an application sets ReadIntervalTimeout and
-			 ReadTotalTimeoutMultiplier to MAXDWORD and sets
-			 ReadTotalTimeoutConstant to a value greater than zero and
-			 less than MAXDWORD, one of the following occurs when the
-			 ReadFile function is called:
-
-			 If there are any bytes in the input buffer, ReadFile returns
-			       immediately with the bytes in the buffer.
-
-			 If there are no bytes in the input buffer, ReadFile waits
-		               until a byte arrives and then returns immediately.
-
-			 If no bytes arrive within the time specified by
-			       ReadTotalTimeoutConstant, ReadFile times out.
+		 If no bytes arrive within the time specified by
+		       ReadTotalTimeoutConstant, ReadFile times out.
 	*/
+
+	timeouts.ReadIntervalTimeout = MAXDWORD
+	timeouts.ReadTotalTimeoutMultiplier = MAXDWORD
+	timeouts.ReadTotalTimeoutConstant = uint32(timeoutMs)
 
 	r, _, err := syscall.Syscall(nSetCommTimeouts, 2, uintptr(h), uintptr(unsafe.Pointer(&timeouts)), 0)
 	if r == 0 {
@@ -292,6 +284,19 @@ func setCommMask(h syscall.Handle) error {
 
 func resetEvent(h syscall.Handle) error {
 	r, _, err := syscall.Syscall(nResetEvent, 1, uintptr(h), 0, 0)
+	if r == 0 {
+		return err
+	}
+	return nil
+}
+
+func purgeComm(h syscall.Handle) error {
+	const PURGE_TXABORT = 0x0001
+	const PURGE_RXABORT = 0x0002
+	const PURGE_TXCLEAR = 0x0004
+	const PURGE_RXCLEAR = 0x0008
+	r, _, err := syscall.Syscall(nPurgeComm, 2, uintptr(h),
+		PURGE_TXABORT|PURGE_RXABORT|PURGE_TXCLEAR|PURGE_RXCLEAR, 0)
 	if r == 0 {
 		return err
 	}
