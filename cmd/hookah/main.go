@@ -18,6 +18,7 @@ func main() {
 	// Print CLI usage info
 	flag.Usage = func() {
 		usage(h)
+		os.Exit(0)
 	}
 	var rOpts, wOpts flagslice.FlagSlice
 	flag.Var(&rOpts, "i", "input node (readonly)")
@@ -42,6 +43,10 @@ func run(h *hookah.API, config *app.Config) error {
 	if err != nil {
 		return err
 	}
+	if len(a.Nodes) == 0 {
+		flag.Usage()
+		return nil
+	}
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 	go func() {
@@ -63,5 +68,4 @@ func usage(h *hookah.API) {
 		fmt.Printf("   %s\n", p.Usage)
 	}
 	fmt.Print("\n")
-	os.Exit(0)
 }
