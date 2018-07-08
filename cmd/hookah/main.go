@@ -4,63 +4,64 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io"
-	"log"
 	"os"
 	"os/signal"
 
 	"github.com/wybiral/hookah"
+	"github.com/wybiral/hookah/internal/app"
+	"github.com/wybiral/hookah/pkg/flagslice"
 )
 
 func main() {
 	// Create hookah API instance
 	h := hookah.New()
+	// Print CLI usage info
 	flag.Usage = func() {
-		fmt.Print("NAME:\n")
-		fmt.Print("   hookah\n\n")
-		fmt.Print("USAGE:\n")
-		fmt.Print("   hookah -i input -o output\n\n")
-		fmt.Print("VERSION:\n")
-		fmt.Printf("   %s\n\n", hookah.Version)
-		fmt.Print("INPUTS:\n")
-		for _, reg := range h.ListInputs() {
-			fmt.Printf("   %s\n", reg.Usage)
-		}
-		fmt.Print("\n")
-		fmt.Print("OUTPUTS:\n")
-		for _, reg := range h.ListOutputs() {
-			fmt.Printf("   %s\n", reg.Usage)
-		}
-		fmt.Print("\n")
-		os.Exit(0)
+		usage(h)
 	}
-	// Parse flags
-	var inOpts string
-	flag.StringVar(&inOpts, "i", "stdin", "Stream input")
-	var outOpts string
-	flag.StringVar(&outOpts, "o", "stdout", "Stream output")
+	var rOpts, wOpts flagslice.FlagSlice
+	flag.Var(&rOpts, "i", "input node (readonly)")
+	flag.Var(&wOpts, "o", "output node (writeonly)")
 	flag.Parse()
-	// Setup input stream
-	r, err := h.NewInput(inOpts)
-	if err != nil {
-		log.Fatal(err)
+	config := &app.Config{
+		RWOpts: flag.Args(),
+		ROpts:  rOpts,
+		WOpts:  wOpts,
 	}
-	defer r.Close()
-	// Setup output stream
-	w, err := h.NewOutput(outOpts)
+	err := run(h, config)
 	if err != nil {
-		log.Fatal(err)
-	}
-	defer w.Close()
-	// Listen for interrupt to close gracefully
-	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, os.Interrupt)
-	go func() {
-		<-ch
-		r.Close()
-		w.Close()
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
+	}
+	os.Exit(0)
+}
+
+func run(h *hookah.API, config *app.Config) error {
+	a, err := app.New(h, config)
+	defer a.Close()
+	if err != nil {
+		return err
+	}
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt)
+	go func() {
+		<-interrupt
+		a.Quit <- nil
 	}()
-	// Copy all of in to out
-	io.Copy(w, r)
+	return a.Run()
+}
+
+func usage(h *hookah.API) {
+	fmt.Print("NAME:\n")
+	fmt.Print("   hookah\n\n")
+	fmt.Print("USAGE:\n")
+	fmt.Print("   hookah node [node] -i in_node -o out_node\n\n")
+	fmt.Print("VERSION:\n")
+	fmt.Printf("   %s\n\n", hookah.Version)
+	fmt.Print("PROTOCOLS:\n")
+	for _, p := range h.ListProtocols() {
+		fmt.Printf("   %s\n", p.Usage)
+	}
+	fmt.Print("\n")
+	os.Exit(0)
 }

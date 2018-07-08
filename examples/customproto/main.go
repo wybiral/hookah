@@ -18,15 +18,15 @@ func main() {
 	// Create hookah API instance
 	h := hookah.New()
 	// Register new protocol
-	h.RegisterInput("numbers", "numbers://parity", numbersHandler)
+	h.RegisterProtocol("numbers", "numbers://parity", numbersHandler)
 	// Create hookah input (using new numbers:// protocol)
-	r, err := h.NewInput("numbers://odd")
+	r, err := h.NewPipe("numbers://odd")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer r.Close()
 	// Create hookah output (stdout)
-	w, err := h.NewOutput("stdout")
+	w, err := h.NewPipe("stdout")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -40,9 +40,8 @@ type numbers struct {
 	counter int64
 }
 
-// Input handlers take an arg string and return an io.ReadCloser for the input
-// stream (or an error).
-func numbersHandler(arg string, opts url.Values) (io.ReadCloser, error) {
+// Handlers take an arg string and return an io.ReadWriteCloser.
+func numbersHandler(arg string, opts url.Values) (io.ReadWriteCloser, error) {
 	var counter int64
 	if arg == "odd" {
 		counter = 1
@@ -54,7 +53,7 @@ func numbersHandler(arg string, opts url.Values) (io.ReadCloser, error) {
 	return &numbers{counter: counter}, nil
 }
 
-// Read method satisfies the io.ReadCloser interface
+// Read method satisfies the io.ReadWriteCloser interface
 func (num *numbers) Read(b []byte) (int, error) {
 	// Artificial delay
 	time.Sleep(time.Second)
@@ -67,7 +66,12 @@ func (num *numbers) Read(b []byte) (int, error) {
 	return n, nil
 }
 
-// Close method satisfies the io.ReadCloser interface
+// Close method satisfies the io.ReadWriteCloser interface
+func (num *numbers) Write(b []byte) (int, error) {
+	return len(b), nil
+}
+
+// Close method satisfies the io.ReadWriteCloser interface
 func (num *numbers) Close() error {
 	return nil
 }

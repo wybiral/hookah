@@ -1,15 +1,15 @@
-package output
+package protocols
 
 import (
-	"io"
 	"net/url"
 	"strconv"
 
 	"github.com/tarm/serial"
+	"github.com/wybiral/hookah/pkg/node"
 )
 
-// Serial creates a serial output and returns WriteCloser
-func Serial(device string, opts url.Values) (io.WriteCloser, error) {
+// Serial creates a serial output and returns Node
+func Serial(device string, opts url.Values) (node.Node, error) {
 	baudstr := opts.Get("baud")
 	if len(baudstr) == 0 {
 		baudstr = "9600"
@@ -22,5 +22,9 @@ func Serial(device string, opts url.Values) (io.WriteCloser, error) {
 		Name: device,
 		Baud: int(baud),
 	}
-	return serial.OpenPort(c)
+	s, err := serial.OpenPort(c)
+	if err != nil {
+		return nil, err
+	}
+	return s, nil
 }

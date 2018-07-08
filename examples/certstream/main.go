@@ -7,10 +7,10 @@ package main
 
 import (
 	"encoding/json"
-	"io"
 	"log"
 
 	"github.com/wybiral/hookah"
+	"github.com/wybiral/hookah/pkg/node"
 )
 
 // CertStream JSON struct
@@ -33,27 +33,25 @@ func main() {
 	// Create hookah API instance
 	h := hookah.New()
 	// Create hookah input (certstream WebSocket API)
-	r, err := h.NewInput("wss://certstream.calidog.io")
+	r, err := h.NewNode("wss://certstream.calidog.io")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer r.Close()
 	// Create hookah output (stdout)
-	w, err := h.NewOutput("stdout")
+	w, err := h.NewNode("stdout")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer w.Close()
 	// Start stream
 	stream(w, r)
 }
 
 // Copy from reader to writer
 // Drops heartbeat messages, restricts fields, and formats JSON
-func stream(w io.Writer, r io.Reader) {
+func stream(w, r *node.Node) {
 	var u certUpdate
-	d := json.NewDecoder(r)
-	e := json.NewEncoder(w)
+	d := json.NewDecoder(r.Reader())
+	e := json.NewEncoder(w.Writer())
 	e.SetIndent("", "  ")
 	for {
 		err := d.Decode(&u)
