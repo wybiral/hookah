@@ -3,13 +3,24 @@ package protocols
 import (
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/tarm/serial"
 	"github.com/wybiral/hookah/pkg/node"
 )
 
-// Serial creates a serial output and returns Node
-func Serial(device string, opts url.Values) (node.Node, error) {
+// Serial creates a serial node
+func Serial(arg string) (*node.Node, error) {
+	var opts url.Values
+	devopts := strings.SplitN(arg, "?", 2)
+	device := devopts[0]
+	if len(devopts) == 2 {
+		op, err := url.ParseQuery(devopts[1])
+		if err != nil {
+			return nil, err
+		}
+		opts = op
+	}
 	baudstr := opts.Get("baud")
 	if len(baudstr) == 0 {
 		baudstr = "9600"
@@ -26,5 +37,5 @@ func Serial(device string, opts url.Values) (node.Node, error) {
 	if err != nil {
 		return nil, err
 	}
-	return s, nil
+	return node.New(s), nil
 }

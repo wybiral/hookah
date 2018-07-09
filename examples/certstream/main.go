@@ -1,8 +1,8 @@
-// Example of using hookah to create an input stream from the CertStream
+// Example of using hookah to create an input node from the CertStream
 // WebSocket API (https://certstream.calidog.io/).
 // The cert updates are filtered to remove heartbeat messages and processed by
 // restricting the JSON fields and adding indentation.
-// These updates are then written to stdout.
+// These updates are then written to stdout node.
 package main
 
 import (
@@ -32,12 +32,12 @@ type certUpdate struct {
 func main() {
 	// Create hookah API instance
 	h := hookah.New()
-	// Create hookah input (certstream WebSocket API)
+	// Create hookah node (certstream WebSocket API)
 	r, err := h.NewNode("wss://certstream.calidog.io")
 	if err != nil {
 		log.Fatal(err)
 	}
-	// Create hookah output (stdout)
+	// Create hookah node (stdout)
 	w, err := h.NewNode("stdout")
 	if err != nil {
 		log.Fatal(err)
@@ -50,8 +50,8 @@ func main() {
 // Drops heartbeat messages, restricts fields, and formats JSON
 func stream(w, r *node.Node) {
 	var u certUpdate
-	d := json.NewDecoder(r.Reader())
-	e := json.NewEncoder(w.Writer())
+	d := json.NewDecoder(r.R)
+	e := json.NewEncoder(w.W)
 	e.SetIndent("", "  ")
 	for {
 		err := d.Decode(&u)

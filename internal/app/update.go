@@ -7,5 +7,5 @@ type Update struct {
 	// Bytes being sent
 	Bytes []byte
 	// Source of update
-	Source node.Node
+	Source *node.Node
 }

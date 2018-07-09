@@ -1,6 +1,5 @@
-// Example of using hookah with a custom input protocol. In this case the input
-// protocol is named numbers:// and it can accept "odd" or "even" as the
-// argument.
+// Example of using hookah with a custom protocol. In this case the protocol is
+// named numbers:// and it can accept "odd" or "even" as the argument.
 package main
 
 import (
@@ -8,10 +7,10 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"net/url"
 	"time"
 
 	"github.com/wybiral/hookah"
+	"github.com/wybiral/hookah/pkg/node"
 )
 
 func main() {
@@ -19,30 +18,26 @@ func main() {
 	h := hookah.New()
 	// Register new protocol
 	h.RegisterProtocol("numbers", "numbers://parity", numbersHandler)
-	// Create hookah input (using new numbers:// protocol)
-	r, err := h.NewPipe("numbers://odd")
+	// Create hookah node (using our new numbers:// protocol)
+	r, err := h.NewNode("numbers://odd")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer r.Close()
-	// Create hookah output (stdout)
-	w, err := h.NewPipe("stdout")
+	// Create hookah node (stdout)
+	w, err := h.NewNode("stdout")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer w.Close()
 	// Copy forever
-	io.Copy(w, r)
+	io.Copy(w.W, r.R)
 }
 
-// struct type to implement interface on.
-type numbers struct {
-	counter int64
-}
+// type to implement Reader interface on.
+type numbers int64
 
-// Handlers take an arg string and return an io.ReadWriteCloser.
-func numbersHandler(arg string, opts url.Values) (io.ReadWriteCloser, error) {
-	var counter int64
+// Handlers take an arg string and return a Node
+func numbersHandler(arg string) (*node.Node, error) {
+	var counter numbers
 	if arg == "odd" {
 		counter = 1
 	} else if arg == "even" {
@@ -50,28 +45,20 @@ func numbersHandler(arg string, opts url.Values) (io.ReadWriteCloser, error) {
 	} else {
 		return nil, errors.New("numbers requires: odd or even")
 	}
-	return &numbers{counter: counter}, nil
+	// Node can have R: Reader, W: Writer, C: Closer
+	// In this case it's just a Reader
+	return &node.Node{R: &counter}, nil
 }
 
-// Read method satisfies the io.ReadWriteCloser interface
+// Read the next number (after delay) and increment counter.
 func (num *numbers) Read(b []byte) (int, error) {
 	// Artificial delay
 	time.Sleep(time.Second)
 	// Format counter
-	s := fmt.Sprintf("%d\n", num.counter)
+	s := fmt.Sprintf("%d\n", *num)
 	// Increment counter
-	num.counter += 2
+	*num += 2
 	// Copy to byte array
 	n := copy(b, []byte(s))
 	return n, nil
-}
-
-// Close method satisfies the io.ReadWriteCloser interface
-func (num *numbers) Write(b []byte) (int, error) {
-	return len(b), nil
-}
-
-// Close method satisfies the io.ReadWriteCloser interface
-func (num *numbers) Close() error {
-	return nil
 }

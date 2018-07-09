@@ -3,7 +3,6 @@ package protocols
 import (
 	"errors"
 	"net/http"
-	"net/url"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -29,8 +28,8 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-// WSListen creates a WebSocket listener and returns Node
-func WSListen(addr string, opts url.Values) (node.Node, error) {
+// WSListen creates a WebSocket listener Node
+func WSListen(addr string) (*node.Node, error) {
 	app := &wsListenApp{}
 	app.server = &http.Server{
 		Addr:    addr,
@@ -39,7 +38,7 @@ func WSListen(addr string, opts url.Values) (node.Node, error) {
 	app.fan = fanout.New()
 	app.ch = make(chan []byte)
 	go app.server.ListenAndServe()
-	return app, nil
+	return node.New(app), nil
 }
 
 func (app *wsListenApp) Read(b []byte) (int, error) {

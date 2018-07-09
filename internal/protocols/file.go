@@ -9,8 +9,18 @@ import (
 	"github.com/wybiral/hookah/pkg/node"
 )
 
-// File creates a file input and returns Node
-func File(path string, opts url.Values) (node.Node, error) {
+// File creates a file Node
+func File(arg string) (*node.Node, error) {
+	var opts url.Values
+	pathopts := strings.SplitN(arg, "?", 2)
+	path := pathopts[0]
+	if len(pathopts) == 2 {
+		op, err := url.ParseQuery(pathopts[1])
+		if err != nil {
+			return nil, err
+		}
+		opts = op
+	}
 	perm := os.FileMode(0666)
 	permstr := opts.Get("perm")
 	if len(permstr) > 0 {
@@ -41,5 +51,9 @@ func File(path string, opts url.Values) (node.Node, error) {
 	} else if write {
 		flags |= os.O_WRONLY
 	}
-	return os.OpenFile(path, flags, perm)
+	f, err := os.OpenFile(path, flags, perm)
+	if err != nil {
+		return nil, err
+	}
+	return node.New(f), nil
 }

@@ -2,6 +2,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -15,21 +16,18 @@ import (
 func main() {
 	// Create hookah API instance
 	h := hookah.New()
-	// Print CLI usage info
 	flag.Usage = func() {
 		usage(h)
 		os.Exit(0)
 	}
-	var rOpts, wOpts flagslice.FlagSlice
+	// Parse flags
+	var opts, rOpts, wOpts flagslice.FlagSlice
 	flag.Var(&rOpts, "i", "input node (readonly)")
 	flag.Var(&wOpts, "o", "output node (writeonly)")
 	flag.Parse()
-	config := &app.Config{
-		RWOpts: flag.Args(),
-		ROpts:  rOpts,
-		WOpts:  wOpts,
-	}
-	err := run(h, config)
+	opts = flag.Args()
+	// Run and report errors
+	err := run(h, opts, rOpts, wOpts)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -37,16 +35,45 @@ func main() {
 	os.Exit(0)
 }
 
-func run(h *hookah.API, config *app.Config) error {
-	a, err := app.New(h, config)
+func run(h *hookah.API, opts, rOpts, wOpts []string) error {
+	a := app.New(nil)
+	// Closing this App instance will close all the nodes being created
 	defer a.Close()
+	// Add bidirectional nodes
+	err := addNodes(h, a, opts, true, true)
 	if err != nil {
 		return err
 	}
+	// Add reader (input) nodes
+	err = addNodes(h, a, rOpts, true, false)
+	if err != nil {
+		return err
+	}
+	// Add writer (output) nodes
+	err = addNodes(h, a, wOpts, false, true)
+	if err != nil {
+		return err
+	}
+	// No nodes, show usage
 	if len(a.Nodes) == 0 {
 		flag.Usage()
 		return nil
 	}
+	// Only one node, link to stdio
+	if len(a.Nodes) == 1 {
+		n, err := h.NewNode("stdio")
+		if err != nil {
+			return err
+		}
+		a.AddNode(n)
+	}
+	if len(a.Readers) == 0 {
+		return errors.New("no input nodes")
+	}
+	if len(a.Writers) == 0 {
+		return errors.New("no output nodes")
+	}
+	// Handle CTRL+C by sending a Quit signal
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 	go func() {
@@ -56,6 +83,25 @@ func run(h *hookah.API, config *app.Config) error {
 	return a.Run()
 }
 
+// Add nodes to the app from opt strings and r/w status
+func addNodes(h *hookah.API, a *app.App, opts []string, r, w bool) error {
+	for _, opt := range opts {
+		n, err := h.NewNode(opt)
+		if err != nil {
+			return err
+		}
+		if !r {
+			n.R = nil
+		}
+		if !w {
+			n.W = nil
+		}
+		a.AddNode(n)
+	}
+	return nil
+}
+
+// Print CLI usage info
 func usage(h *hookah.API) {
 	fmt.Print("NAME:\n")
 	fmt.Print("   hookah\n\n")

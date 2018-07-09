@@ -18,8 +18,8 @@ type listenApp struct {
 	b  []byte
 }
 
-// listen creates a generic listener and returns ReadWriteCloser
-func listen(network, addr string) (node.Node, error) {
+// listen creates a generic listener and returns Node
+func listen(network, addr string) (*node.Node, error) {
 	app := &listenApp{}
 	ln, err := net.Listen(network, addr)
 	if err != nil {
@@ -29,7 +29,7 @@ func listen(network, addr string) (node.Node, error) {
 	app.fan = fanout.New()
 	app.ch = make(chan []byte)
 	go app.serve()
-	return app, nil
+	return node.New(app), nil
 }
 
 func (app *listenApp) Read(b []byte) (int, error) {

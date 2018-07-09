@@ -2,7 +2,6 @@ package protocols
 
 import (
 	"io"
-	"net/url"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -20,17 +19,17 @@ type wsconn struct {
 	wmu sync.Mutex
 }
 
-// WS creates a WebSocket client and returns Node
-func WS(addr string, opts url.Values) (node.Node, error) {
+// WS creates a WebSocket client Node
+func WS(addr string) (*node.Node, error) {
 	return wsrequest("ws://" + addr)
 }
 
-// WSS creates a secure WebSocket client and returns Node
-func WSS(addr string, opts url.Values) (node.Node, error) {
+// WSS creates a secure WebSocket client Node
+func WSS(addr string) (*node.Node, error) {
 	return wsrequest("wss://" + addr)
 }
 
-func wsrequest(addr string) (node.Node, error) {
+func wsrequest(addr string) (*node.Node, error) {
 	conn, _, err := websocket.DefaultDialer.Dial(addr, nil)
 	if err != nil {
 		return nil, err
@@ -38,7 +37,7 @@ func wsrequest(addr string) (node.Node, error) {
 	ws := &wsconn{
 		conn: conn,
 	}
-	return ws, nil
+	return node.New(ws), nil
 }
 
 func (ws *wsconn) Read(b []byte) (int, error) {

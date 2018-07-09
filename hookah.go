@@ -3,7 +3,6 @@ package hookah
 
 import (
 	"errors"
-	"net/url"
 	"sort"
 	"strings"
 	"sync"
@@ -22,7 +21,7 @@ type API struct {
 }
 
 // Handler is a function that returns a new Node.
-type Handler func(arg string, opts url.Values) (node.Node, error)
+type Handler func(arg string) (*node.Node, error)
 
 // Protocol represents a registered protocol handler.
 type Protocol struct {
@@ -41,18 +40,15 @@ func New() *API {
 }
 
 // NewNode parses an option string and returns a new Node.
-func (a *API) NewNode(op string) (node.Node, error) {
+func (a *API) NewNode(op string) (*node.Node, error) {
 	a.mu.RLock()
 	defer a.mu.RUnlock()
-	proto, arg, opts, err := parseOptions(op)
-	if err != nil {
-		return nil, err
-	}
+	proto, arg := parseOptions(op)
 	p, ok := a.protocols[proto]
 	if !ok {
 		return nil, errors.New("unknown protocol: " + proto)
 	}
-	return p.Handler(arg, opts)
+	return p.Handler(arg)
 }
 
 // ListProtocols returns all registered protocols.
@@ -81,6 +77,7 @@ func (a *API) RegisterProtocol(proto, usage string, h Handler) {
 }
 
 func (a *API) registerProtocols() {
+	a.RegisterProtocol("exec", "exec://command", protocols.Exec)
 	a.RegisterProtocol("file", "file://path/to/file", protocols.File)
 	a.RegisterProtocol("serial", "serial://device?baud=baudrate", protocols.Serial)
 	a.RegisterProtocol("stderr", "stderr", protocols.Stderr)
@@ -96,17 +93,14 @@ func (a *API) registerProtocols() {
 	a.RegisterProtocol("ws-listen", "ws-listen://address", protocols.WSListen)
 }
 
-func parseOptions(op string) (proto, arg string, opts url.Values, err error) {
+func parseOptions(op string) (string, string) {
 	protoarg := strings.SplitN(op, "://", 2)
-	proto = protoarg[0]
+	if len(protoarg) == 0 {
+		return "", ""
+	}
+	proto := protoarg[0]
 	if len(protoarg) == 1 {
-		return
+		return proto, ""
 	}
-	argopts := strings.SplitN(protoarg[1], "?", 2)
-	arg = argopts[0]
-	if len(argopts) == 1 {
-		return
-	}
-	opts, err = url.ParseQuery(argopts[1])
-	return
+	return proto, protoarg[1]
 }
