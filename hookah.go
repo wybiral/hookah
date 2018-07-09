@@ -3,36 +3,29 @@ package hookah
 
 import (
 	"errors"
-	"io"
-	"net/url"
 	"sort"
 	"strings"
 	"sync"
 
-	"github.com/wybiral/hookah/pkg/input"
-	"github.com/wybiral/hookah/pkg/output"
+	"github.com/wybiral/hookah/internal/protocols"
+	"github.com/wybiral/hookah/pkg/node"
 )
 
-// Version of hookah API
-const Version = "1.0.5"
+// Version of hookah API.
+const Version = "2.0.0"
 
 // API is an instance of the Hookah API.
 type API struct {
-	mu             sync.RWMutex
-	inputHandlers  map[string]RegisteredInput
-	outputHandlers map[string]RegisteredOutput
+	mu        sync.RWMutex
+	protocols map[string]Protocol
 }
 
-// RegisteredInput represents a registered input handler.
-type RegisteredInput struct {
-	Handler input.Handler
-	Proto   string
-	Usage   string
-}
+// Handler is a function that returns a new Node.
+type Handler func(arg string) (*node.Node, error)
 
-// RegisteredOutput represents a registered output handler.
-type RegisteredOutput struct {
-	Handler output.Handler
+// Protocol represents a registered protocol handler.
+type Protocol struct {
+	Handler Handler
 	Proto   string
 	Usage   string
 }
@@ -40,51 +33,31 @@ type RegisteredOutput struct {
 // New returns a Hookah API instance with default handlers.
 func New() *API {
 	api := &API{
-		inputHandlers:  make(map[string]RegisteredInput),
-		outputHandlers: make(map[string]RegisteredOutput),
+		protocols: make(map[string]Protocol),
 	}
-	api.registerInputs()
-	api.registerOutputs()
+	api.registerProtocols()
 	return api
 }
 
-// NewInput parses an input option string and returns a new ReadCloser.
-func (a *API) NewInput(op string) (io.ReadCloser, error) {
+// NewNode parses an option string and returns a new Node.
+func (a *API) NewNode(op string) (*node.Node, error) {
 	a.mu.RLock()
 	defer a.mu.RUnlock()
-	proto, arg, opts, err := parseOptions(op)
-	if err != nil {
-		return nil, err
-	}
-	reg, ok := a.inputHandlers[proto]
+	proto, arg := parseOptions(op)
+	p, ok := a.protocols[proto]
 	if !ok {
-		return nil, errors.New("unknown input protocol: " + proto)
+		return nil, errors.New("unknown protocol: " + proto)
 	}
-	return reg.Handler(arg, opts)
+	return p.Handler(arg)
 }
 
-// NewOutput parses an output option string and returns a new WriteCloser.
-func (a *API) NewOutput(op string) (io.WriteCloser, error) {
+// ListProtocols returns all registered protocols.
+func (a *API) ListProtocols() []Protocol {
 	a.mu.RLock()
 	defer a.mu.RUnlock()
-	proto, arg, opts, err := parseOptions(op)
-	if err != nil {
-		return nil, err
-	}
-	reg, ok := a.outputHandlers[proto]
-	if !ok {
-		return nil, errors.New("unknown output protocol: " + proto)
-	}
-	return reg.Handler(arg, opts)
-}
-
-// ListInputs returns all registered input handlers.
-func (a *API) ListInputs() []RegisteredInput {
-	a.mu.RLock()
-	defer a.mu.RUnlock()
-	out := make([]RegisteredInput, 0, len(a.inputHandlers))
-	for _, reg := range a.inputHandlers {
-		out = append(out, reg)
+	out := make([]Protocol, 0, len(a.protocols))
+	for _, p := range a.protocols {
+		out = append(out, p)
 	}
 	sort.Slice(out, func(i, j int) bool {
 		return out[i].Proto < out[j].Proto
@@ -92,89 +65,42 @@ func (a *API) ListInputs() []RegisteredInput {
 	return out
 }
 
-// ListOutputs returns all registered output handlers.
-func (a *API) ListOutputs() []RegisteredOutput {
-	a.mu.RLock()
-	defer a.mu.RUnlock()
-	out := make([]RegisteredOutput, 0, len(a.outputHandlers))
-	for _, reg := range a.outputHandlers {
-		out = append(out, reg)
-	}
-	sort.Slice(out, func(i, j int) bool {
-		return out[i].Proto < out[j].Proto
-	})
-	return out
-}
-
-// RegisterInput registers a new input protocol.
-func (a *API) RegisterInput(proto, usage string, h input.Handler) {
+// RegisterProtocol registers a new protocol handler.
+func (a *API) RegisterProtocol(proto, usage string, h Handler) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	a.inputHandlers[proto] = RegisteredInput{
+	a.protocols[proto] = Protocol{
 		Handler: h,
 		Proto:   proto,
 		Usage:   usage,
 	}
 }
 
-// RegisterOutput registers a new output protocol.
-func (a *API) RegisterOutput(proto, usage string, h output.Handler) {
-	a.mu.Lock()
-	defer a.mu.Unlock()
-	a.outputHandlers[proto] = RegisteredOutput{
-		Handler: h,
-		Proto:   proto,
-		Usage:   usage,
-	}
+func (a *API) registerProtocols() {
+	a.RegisterProtocol("exec", "exec://command", protocols.Exec)
+	a.RegisterProtocol("file", "file://path/to/file", protocols.File)
+	a.RegisterProtocol("serial", "serial://device?baud=baudrate", protocols.Serial)
+	a.RegisterProtocol("stderr", "stderr", protocols.Stderr)
+	a.RegisterProtocol("stdin", "stdin", protocols.Stdin)
+	a.RegisterProtocol("stdio", "stdio", protocols.Stdio)
+	a.RegisterProtocol("stdout", "stdout", protocols.Stdout)
+	a.RegisterProtocol("tcp", "tcp://address", protocols.TCP)
+	a.RegisterProtocol("tcp-listen", "tcp-listen://address", protocols.TCPListen)
+	a.RegisterProtocol("unix", "unix://path/to/sock", protocols.Unix)
+	a.RegisterProtocol("unix-listen", "unix-listen://path/to/sock", protocols.UnixListen)
+	a.RegisterProtocol("ws", "ws://address", protocols.WS)
+	a.RegisterProtocol("wss", "wss://address", protocols.WSS)
+	a.RegisterProtocol("ws-listen", "ws-listen://address", protocols.WSListen)
 }
 
-func (a *API) registerInputs() {
-	a.RegisterInput("file", "file://path/to/file", input.File)
-	a.RegisterInput("http", "http://address", input.HTTP)
-	a.RegisterInput("https", "https://address", input.HTTPS)
-	a.RegisterInput("http-listen", "http-listen://address", input.HTTPListen)
-	a.RegisterInput("serial", "serial://device?baud=baudrate", input.Serial)
-	a.RegisterInput("stdin", "stdin", input.Stdin)
-	a.RegisterInput("tcp", "tcp://address", input.TCP)
-	a.RegisterInput("tcp-listen", "tcp-listen://address", input.TCPListen)
-	a.RegisterInput("udp-listen", "udp-listen://address", input.UDPListen)
-	a.RegisterInput("udp-multicast", "udp-multicast://address?iface=interface", input.UDPMulticast)
-	a.RegisterInput("unix", "unix://path/to/sock", input.Unix)
-	a.RegisterInput("unix-listen", "unix-listen://path/to/sock", input.UnixListen)
-	a.RegisterInput("ws", "ws://address", input.WS)
-	a.RegisterInput("wss", "wss://address", input.WSS)
-	a.RegisterInput("ws-listen", "ws-listen://address", input.WSListen)
-}
-
-func (a *API) registerOutputs() {
-	a.RegisterOutput("file", "file://path/to/file", output.File)
-	a.RegisterOutput("http", "http://address", output.HTTP)
-	a.RegisterOutput("https", "https://address", output.HTTPS)
-	a.RegisterOutput("http-listen", "http-listen://address", output.HTTPListen)
-	a.RegisterOutput("serial", "serial://device?baud=baudrate", output.Serial)
-	a.RegisterOutput("stderr", "stderr", output.Stderr)
-	a.RegisterOutput("stdout", "stdout", output.Stdout)
-	a.RegisterOutput("tcp", "tcp://address", output.TCP)
-	a.RegisterOutput("tcp-listen", "tcp-listen://address", output.TCPListen)
-	a.RegisterOutput("udp", "udp://address", output.UDP)
-	a.RegisterOutput("unix", "unix://path/to/sock", output.Unix)
-	a.RegisterOutput("unix-listen", "unix-listen://path/to/sock", output.UnixListen)
-	a.RegisterOutput("ws", "ws://address", output.WS)
-	a.RegisterOutput("wss", "wss://address", output.WSS)
-	a.RegisterOutput("ws-listen", "ws-listen://address", output.WSListen)
-}
-
-func parseOptions(op string) (proto, arg string, opts url.Values, err error) {
+func parseOptions(op string) (string, string) {
 	protoarg := strings.SplitN(op, "://", 2)
-	proto = protoarg[0]
+	if len(protoarg) == 0 {
+		return "", ""
+	}
+	proto := protoarg[0]
 	if len(protoarg) == 1 {
-		return
+		return proto, ""
 	}
-	argopts := strings.SplitN(protoarg[1], "?", 2)
-	arg = argopts[0]
-	if len(argopts) == 1 {
-		return
-	}
-	opts, err = url.ParseQuery(argopts[1])
-	return
+	return proto, protoarg[1]
 }

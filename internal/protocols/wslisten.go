@@ -1,17 +1,22 @@
-package output
+package protocols
 
 import (
-	"io"
+	"errors"
 	"net/http"
-	"net/url"
+	"sync"
 
 	"github.com/gorilla/websocket"
 	"github.com/wybiral/hookah/pkg/fanout"
+	"github.com/wybiral/hookah/pkg/node"
 )
 
 type wsListenApp struct {
+	sync.Mutex
 	server *http.Server
 	fan    *fanout.Fanout
+	// Channel of messages
+	ch chan []byte
+	b  []byte
 }
 
 // WebSocket upgrader
@@ -23,16 +28,31 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-// WSListen creates a WebSocket listener and returns ReadCloser
-func WSListen(addr string, opts url.Values) (io.WriteCloser, error) {
+// WSListen creates a WebSocket listener Node
+func WSListen(addr string) (*node.Node, error) {
 	app := &wsListenApp{}
 	app.server = &http.Server{
 		Addr:    addr,
 		Handler: http.HandlerFunc(app.handle),
 	}
 	app.fan = fanout.New()
+	app.ch = make(chan []byte)
 	go app.server.ListenAndServe()
-	return app, nil
+	return node.New(app), nil
+}
+
+func (app *wsListenApp) Read(b []byte) (int, error) {
+	app.Lock()
+	defer app.Unlock()
+	if len(app.b) == 0 {
+		app.b = <-app.ch
+	}
+	if len(app.b) == 0 {
+		return 0, errors.New("listen channel closed")
+	}
+	n := copy(b, app.b)
+	app.b = app.b[n:]
+	return n, nil
 }
 
 func (app *wsListenApp) Write(b []byte) (int, error) {
@@ -50,23 +70,34 @@ func (app *wsListenApp) handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer ws.Close()
-	go app.writeLoop(ws)
-	// Read from connection to process WebSocket control messages
+	wg := &sync.WaitGroup{}
+	wg.Add(2)
+	go app.reader(ws, wg)
+	go app.writer(ws, wg)
+	wg.Wait()
+}
+
+// Pump WebSocket messages to app.ch
+func (app *wsListenApp) reader(ws *websocket.Conn, wg *sync.WaitGroup) {
+	defer wg.Done()
 	for {
-		_, _, err := ws.NextReader()
+		_, msg, err := ws.ReadMessage()
 		if err != nil {
 			return
+		}
+		if len(msg) > 0 {
+			app.ch <- msg
 		}
 	}
 }
 
-// Register with fanout instance and pump messages to WebSocket client
-func (app *wsListenApp) writeLoop(ws *websocket.Conn) {
+// Pump app.fan messages to WebSocket
+func (app *wsListenApp) writer(ws *websocket.Conn, wg *sync.WaitGroup) {
 	ch := make(chan []byte, queueSize)
 	app.fan.Add(ch)
 	defer func() {
 		app.fan.Remove(ch)
-		ws.Close()
+		wg.Done()
 	}()
 	for chunk := range ch {
 		err := ws.WriteMessage(websocket.TextMessage, chunk)
