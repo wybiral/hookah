@@ -14,29 +14,39 @@ go build github.com/wybiral/hookah/cmd/hookah
 ```
 
 # Usage instructions (CLI)
-The hookah command allows you to specify an input source -i and an output destination -o.
-Any data that's fed into the input will be piped to the output.
+The hookah command allows you to pipe data betweem various sources/destinations.
+By default pipes are full duplex but can be limited to input/output-only mode.
+
+For details run `hookah -h`
 
 ## Examples
 
-Pipe from stdin to a new TCP listener on port 8080:
+Pipe from stdin/stdout to a new TCP listener on port 8080:
 ```
-hookah -o tcp-listen://localhost:8080
+hookah stdio tcp-listen://localhost:8080
+```
+Note: this is the same even if you ommit the `stdio` part because hookah will
+assume stdio is indended when only one node (tcp-listen in this case) is used.
+
+Pipe from an existing TCP listener on port 8080 to a new WebSocket listener on
+port 8081:
+```
+hookah tcp-listen://localhost:8080 ws-listen://localhost:8081
 ```
 
-Pipe from an existing TCP listener on port 8080 to a new HTTP listener on port 8081:
+Pipe from a new Unix domain socket listener to a TCP client on port 8080:
 ```
-hookah -i tcp://localhost:8080 -o http-listen://localhost:8081
-```
-
-Pipe from a new Unix domain socket listener to stdout:
-```
-hookah -i unix-listen://path/to/sock
+hookah unix-listen://path/to/sock tcp://localhost:8080
 ```
 
-Pipe from a new HTTP listener on port 8080 to an existing Unix domain socket:
+Pipe only the input from a TCP client to the output of another TCP client:
 ```
-hookah -i http-listen://localhost:8080 -o unix://path/to/sock
+hookah -i tcp://:8080 -o tcp://:8081
+```
+
+Fan-out the input from a TCP listener to the output of multiple TCP clients:
+```
+hookah -i tcp-listen://:8080 -o tcp://:8081 -o tcp://:8082 -o tcp://:8083
 ```
 
 # Usage instructions (Go package)
