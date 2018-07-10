@@ -28,10 +28,10 @@ hookah stdio tcp-listen://localhost:8080
 Note: this is the same even if you ommit the `stdio` part because hookah will
 assume stdio is indended when only one node (tcp-listen in this case) is used.
 
-Pipe from an existing TCP listener on port 8080 to a new WebSocket listener on
+Pipe from a TCP client on port 8080 to a new WebSocket listener on
 port 8081:
 ```
-hookah tcp-listen://localhost:8080 ws-listen://localhost:8081
+hookah tcp://localhost:8080 ws-listen://localhost:8081
 ```
 
 Pipe from a new Unix domain socket listener to a TCP client on port 8080:
