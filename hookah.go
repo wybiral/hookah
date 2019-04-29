@@ -86,6 +86,8 @@ func (a *API) registerProtocols() {
 	a.RegisterProtocol("stdout", "stdout", protocols.Stdout)
 	a.RegisterProtocol("tcp", "tcp://address", protocols.TCP)
 	a.RegisterProtocol("tcp-listen", "tcp-listen://address", protocols.TCPListen)
+	a.RegisterProtocol("tls", "tls://address?cert=path&insecure=false", protocols.TLS)
+	a.RegisterProtocol("tls-listen", "tls-listen://address?cert=path&key=path", protocols.TLSListen)
 	a.RegisterProtocol("unix", "unix://path/to/sock", protocols.Unix)
 	a.RegisterProtocol("unix-listen", "unix-listen://path/to/sock", protocols.UnixListen)
 	a.RegisterProtocol("ws", "ws://address", protocols.WS)
