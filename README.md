@@ -19,7 +19,7 @@ go build github.com/wybiral/hookah/cmd/hookah
 ```
 
 # Usage instructions (CLI)
-The hookah command allows you to pipe data betweem various sources/destinations.
+The hookah command allows you to pipe data between various sources/destinations.
 By default pipes are full duplex but can be limited to input/output-only mode.
 
 For details run `hookah -h`
