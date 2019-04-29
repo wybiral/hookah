@@ -3,6 +3,8 @@ package protocols
 import (
 	"errors"
 	"net/http"
+	"net/url"
+	"strings"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -38,6 +40,33 @@ func WSListen(addr string) (*node.Node, error) {
 	app.fan = fanout.New()
 	app.ch = make(chan []byte)
 	go app.server.ListenAndServe()
+	return node.New(app), nil
+}
+
+// WSSListen creates a wss WebSocket listener Node
+func WSSListen(arg string) (*node.Node, error) {
+	var opts url.Values
+	// Parse options
+	addrOpts := strings.SplitN(arg, "?", 2)
+	addr := addrOpts[0]
+	if len(addrOpts) == 2 {
+		op, err := url.ParseQuery(addrOpts[1])
+		if err != nil {
+			return nil, err
+		}
+		opts = op
+	}
+	// Load cert and key files
+	cert := opts.Get("cert")
+	key := opts.Get("key")
+	app := &wsListenApp{}
+	app.server = &http.Server{
+		Addr:    addr,
+		Handler: http.HandlerFunc(app.handle),
+	}
+	app.fan = fanout.New()
+	app.ch = make(chan []byte)
+	go app.server.ListenAndServeTLS(cert, key)
 	return node.New(app), nil
 }
 

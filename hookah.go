@@ -93,6 +93,7 @@ func (a *API) registerProtocols() {
 	a.RegisterProtocol("ws", "ws://address", protocols.WS)
 	a.RegisterProtocol("wss", "wss://address", protocols.WSS)
 	a.RegisterProtocol("ws-listen", "ws-listen://address", protocols.WSListen)
+	a.RegisterProtocol("wss-listen", "wss-listen://address?cert=path&key=path", protocols.WSSListen)
 }
 
 func parseOptions(op string) (string, string) {
