@@ -1,3 +1,4 @@
+// Package app implements main hookah application Node manager.
 package app
 
 import (

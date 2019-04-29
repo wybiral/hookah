@@ -1,3 +1,4 @@
+// Package flagslice implements a variable argument string type for CLI flags.
 package flagslice
 
 import "strings"

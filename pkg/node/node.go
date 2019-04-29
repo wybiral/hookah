@@ -1,10 +1,11 @@
+// Package node implements Node type.
 package node
 
 import (
 	"io"
 )
 
-// Node is the main interface used by all hookah nodes.
+// Node is the main type used by all hookah nodes.
 type Node struct {
 	R io.Reader
 	W io.Writer
