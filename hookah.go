@@ -12,7 +12,7 @@ import (
 )
 
 // Version of hookah API.
-const Version = "2.1.0"
+const Version = "2.2.0"
 
 // API is an instance of the Hookah API.
 type API struct {
@@ -88,6 +88,9 @@ func (a *API) registerProtocols() {
 	a.RegisterProtocol("tcp-listen", "tcp-listen://address", protocols.TCPListen)
 	a.RegisterProtocol("tls", "tls://address?cert=path&insecure=false", protocols.TLS)
 	a.RegisterProtocol("tls-listen", "tls-listen://address?cert=path&key=path", protocols.TLSListen)
+	a.RegisterProtocol("udp", "udp://address", protocols.UDP)
+	a.RegisterProtocol("udp-listen", "udp-listen://address", protocols.UDPListen)
+	a.RegisterProtocol("udp-multicast", "udp-multicast://address", protocols.UDPMulticast)
 	a.RegisterProtocol("unix", "unix://path/to/sock", protocols.Unix)
 	a.RegisterProtocol("unix-listen", "unix-listen://path/to/sock", protocols.UnixListen)
 	a.RegisterProtocol("ws", "ws://address", protocols.WS)
