@@ -1,5 +1,5 @@
 # hookah
-A Swiss Army knife for data pipelines.
+A cross-platform tool for data pipelines. 
 
 [![GoDoc](https://godoc.org/github.com/wybiral/hookah?status.svg)](https://godoc.org/github.com/wybiral/hookah)
 
